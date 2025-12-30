@@ -1,71 +1,46 @@
-Add PWA support, admin navigation, and data seeding
+Fix Heroku build: Remove requirements.txt, use uv exclusively
 
-This commit enhances the Root Beer Review App with Progressive Web App
-functionality, improved admin navigation, and automatic data seeding.
+This commit fixes the Heroku build error by removing requirements.txt
+and using uv as the exclusive package manager, as required by Heroku's
+updated buildpack policy.
 
-Features Added:
+Issue Fixed:
+- Heroku build was failing with error: "Multiple Python package manager
+  files were found" (requirements.txt and uv.lock)
+- Heroku's Python buildpack no longer supports implicit package manager
+  selection (deprecated November 2024)
+- Must explicitly choose one package manager
 
-PWA (Progressive Web App) Support:
-- Full PWA implementation with manifest.json and service worker
-- App can be installed on mobile devices (iOS/Android) and desktop browsers
-- Service worker provides offline functionality and asset caching
-- Standalone app-like experience without browser UI
-- Apple-specific meta tags for iOS home screen installation
-- PWA setup guide (PWA_SETUP.md) with detailed instructions
+Solution:
+- Removed requirements.txt file
+- Project now uses uv exclusively via pyproject.toml and uv.lock
+- All dependencies are defined in pyproject.toml
+- uv.lock provides deterministic dependency resolution
 
-Admin Navigation on Public Site:
-- Logged-in admins now see admin navigation links on public pages
-- Seamless navigation between public and admin interfaces
-- Admin links include: Dashboard, Manage Root Beers, Manage Reviews, Account
-- Non-blocking admin check function (get_admin_optional) for public routes
+Why uv:
+- Project was already configured for uv
+- uv is fast, actively maintained, and supports lockfiles
+- Heroku's buildpack has native uv support
+- Better dependency management with lockfiles
 
-Default Data Seeding:
-- Automatic seeding of default data on application startup
-- 20 default flavor notes from planning documents:
-  - Traditional: Sassafras, Sarsaparilla, Wintergreen, Licorice, Anise, Birch
-  - Sweet & Creamy: Vanilla, Caramel, Molasses, Honey, Marshmallow
-  - Spice & Herbal: Clove, Cinnamon, Nutmeg, Allspice, Ginger
-  - Other: Citrus peel, Medicinal, Earthy, Peppery
-- 5 default colors: Amber, Brown, Dark Brown, Black, Mahogany
-- 5 default serving contexts: Bottle, Can, Tap, Fountain, Growler
-- Idempotent seeding (only seeds if collections are empty)
+Changes:
+- Deleted requirements.txt
+- Updated README.md to use "uv sync" instead of "uv pip install -r requirements.txt"
+- Updated SETUP.md to reflect uv-only installation
+- Updated CHANGELOG.md with build fix note
+- Updated project structure documentation
 
-Admin Account Management:
-- New /admin/account page for changing admin password
-- Password validation and confirmation
-- No longer requires .env file changes after initial setup
+Documentation Updates:
+- README.md: Changed installation instructions to "uv sync"
+- README.md: Updated project structure to show uv.lock instead of requirements.txt
+- README.md: Updated tech stack to show "uv (exclusive)"
+- SETUP.md: Updated installation steps to use "uv sync"
+- CHANGELOG.md: Added Heroku build fix entry
 
-Improvements:
-- Enhanced cookie persistence with improved domain/path configuration
-- Better logout cookie deletion handling
-- Fixed Internal Server Error on /admin/account route (missing template)
-- Improved login persistence across navigation
+Impact:
+- Heroku builds will now succeed
+- Local development unchanged (already using uv)
+- No functional changes to the application
+- Cleaner dependency management with single source of truth (pyproject.toml)
 
-Technical Implementation:
-- Service worker at /service-worker.js with root scope
-- PWA manifest.json with app metadata, icons, and shortcuts
-- Service worker registration in both public and admin templates
-- Helper function for optional admin authentication checks
-- Data seeding function (seed_data.py) called during app startup
-
-Files Changed:
-- app/routes/auth.py: Added get_admin_optional() helper function
-- app/routes/public.py: Added admin context to all public routes
-- app/templates/base.html: Enhanced admin navigation, added PWA meta tags
-- app/templates/admin/base.html: Added PWA meta tags and service worker
-- app/templates/admin/account.html: New template for password management
-- app/seed_data.py: New module for default data seeding
-- app/main.py: Added seed_data import and service worker route
-- app/static/manifest.json: PWA manifest file
-- app/static/service-worker.js: Service worker for offline support
-- app/static/icons/README.md: Icon creation guide
-
-Documentation:
-- Updated CHANGELOG.md with version 0.2.0
-- Updated README.md with PWA and new features
-- Updated SETUP.md with default data and PWA info
-- Added PWA_SETUP.md with comprehensive PWA guide
-
-This update makes the app installable as a native-like app on mobile
-devices and provides a better admin experience with seamless navigation
-and pre-populated default data.
+This is a build/deployment fix with no impact on application functionality.

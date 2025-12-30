@@ -84,6 +84,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed Internal Server Error on `/admin/account` route (missing template)
 - Improved login persistence across navigation between public and admin pages
+- **Security**: Service worker now excludes admin routes from caching to prevent sensitive data exposure offline
+  - Admin routes always fetch from network, never cached
+  - Only public pages and static assets are cached
+  - Proper error handling for admin routes when offline
+- **Heroku Build**: Removed `requirements.txt` to use `uv` exclusively for package management
+  - Heroku now uses `uv.lock` and `pyproject.toml` for dependency resolution
+  - Resolves build error about multiple package manager files
 
 ### Technical
 - Service worker implementation for offline support and asset caching
