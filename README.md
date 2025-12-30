@@ -56,8 +56,8 @@ RootBeerReviewApp/
 │       ├── manifest.json    # PWA manifest
 │       └── service-worker.js # PWA service worker
 ├── planning/                # Planning documents
-├── pyproject.toml          # Project configuration (uv)
-├── requirements.txt        # Python dependencies
+├── pyproject.toml          # Project configuration and dependencies (uv)
+├── uv.lock                 # Dependency lock file (uv)
 ├── Procfile               # Heroku deployment
 ├── .python-version        # Python version
 └── .env                   # Environment variables (not in git)
@@ -69,7 +69,7 @@ RootBeerReviewApp/
 
 - Python 3.12+
 - MongoDB Atlas account (or local MongoDB)
-- `uv` package manager (recommended) or `pip`
+- `uv` package manager (required)
 
 ### Installation
 
@@ -77,13 +77,10 @@ RootBeerReviewApp/
 
 2. **Install dependencies using `uv`**:
    ```bash
-   uv pip install -r requirements.txt
+   uv sync
    ```
    
-   Or using `pip`:
-   ```bash
-   pip install -r requirements.txt
-   ```
+   This will install all dependencies from `pyproject.toml` and create a lock file.
 
 3. **Set up environment variables**:
    
@@ -99,16 +96,9 @@ RootBeerReviewApp/
 
 4. **Run the application**:
    
-   With `uv` (recommended):
+   With `uv`:
    ```bash
    uv run uvicorn app.main:app --reload
-   ```
-   
-   Or if using a traditional virtual environment:
-   ```bash
-   source venv/bin/activate  # Linux/Mac
-   # or venv\Scripts\activate on Windows
-   uvicorn app.main:app --reload
    ```
 
 5. **Access the application**:

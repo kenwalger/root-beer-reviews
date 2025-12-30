@@ -4,12 +4,12 @@ This guide will help you get the Root Beer Review App up and running.
 
 ## Quick Start
 
-1. **Install dependencies**:
+1. **Install dependencies using `uv`**:
    ```bash
-   uv pip install -r requirements.txt
-   # or
-   pip install -r requirements.txt
+   uv sync
    ```
+   
+   This installs all dependencies from `pyproject.toml` and creates/updates the lock file.
 
 2. **Create `.env` file**:
    
@@ -32,16 +32,9 @@ This guide will help you get the Root Beer Review App up and running.
 
 3. **Run the app**:
    
-   With `uv` (recommended):
+   With `uv`:
    ```bash
    uv run uvicorn app.main:app --reload
-   ```
-   
-   Or if using a virtual environment:
-   ```bash
-   # Activate venv first (if using traditional venv)
-   source venv/bin/activate  # or `venv\Scripts\activate` on Windows
-   uvicorn app.main:app --reload
    ```
 
 4. **Access**:
