@@ -18,6 +18,7 @@ A structured, data-driven web application for reviewing root beers. This app dis
 - **Frontend**: Server-rendered HTML with Jinja2 templates
 - **Styling**: Tailwind CSS with custom root beer theme
 - **Charts**: Chart.js for radar/spider charts
+- **Authentication**: JWT-based session cookies, bcrypt password hashing
 - **Package Management**: `uv` (with fallback to pip)
 - **Deployment**: Heroku-ready
 
@@ -90,13 +91,17 @@ RootBeerReviewApp/
    ```
 
 4. **Run the application**:
-   ```bash
-   uvicorn app.main:app --reload
-   ```
    
-   Or using `uv`:
+   With `uv` (recommended):
    ```bash
    uv run uvicorn app.main:app --reload
+   ```
+   
+   Or if using a traditional virtual environment:
+   ```bash
+   source venv/bin/activate  # Linux/Mac
+   # or venv\Scripts\activate on Windows
+   uvicorn app.main:app --reload
    ```
 
 5. **Access the application**:

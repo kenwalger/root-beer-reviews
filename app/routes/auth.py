@@ -79,7 +79,7 @@ async def logout():
     return response
 
 
-def require_admin(request: Request = Depends(get_current_admin)):
+async def require_admin(request: Request) -> dict:
     """Dependency to require admin authentication."""
-    return request
+    return get_current_admin(request)
 

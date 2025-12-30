@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Initial release of Root Beer Review App
-- Admin authentication system with session-based auth
+- Admin authentication system with session-based auth (JWT cookies)
 - Root beer CRUD operations with objective attributes
 - Review CRUD operations with structured sensory ratings
 - Flavor note management system
@@ -21,7 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tailwind CSS with custom root beer theme
 - MongoDB integration with audit trails
 - Heroku deployment configuration
-- Comprehensive documentation
+- Comprehensive documentation (README, CHANGELOG, LICENSE, CONTRIBUTING, SETUP)
+- Secret key generation guide
+- Environment variable configuration
 
 ### Features
 - **Structured Data Model**: Separation of objective facts, structured sensory ratings, and subjective opinions
@@ -29,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Flavor Note Taxonomy**: Predefined categories with admin-extensible list
 - **Data Visualization**: Radar charts for sensory dimensions
 - **Audit Trails**: Creation and update tracking with timestamps and user information
+- **Form-based Admin Interface**: Full CRUD operations via web forms
+- **Public Browsing**: Filter and sort root beers by brand, region, and score
 
 ### Technical
 - FastAPI backend with async MongoDB operations
@@ -38,6 +42,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Chart.js for data visualization
 - Environment-based configuration
 - `uv` package management support
+- Direct bcrypt password hashing (no passlib dependency)
+- Form data handling with FastAPI Form dependencies
+
+### Fixed
+- Resolved bcrypt/passlib compatibility issues by switching to direct bcrypt usage
+- Fixed pyproject.toml package configuration for uv builds
+- Fixed form data handling in admin routes
+- Added email-validator dependency for Pydantic EmailStr validation
+- Fixed authentication dependency injection pattern
 
 ## [Unreleased]
 
