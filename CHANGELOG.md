@@ -91,6 +91,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Heroku Build**: Removed `requirements.txt` to use `uv` exclusively for package management
   - Heroku now uses `uv.lock` and `pyproject.toml` for dependency resolution
   - Resolves build error about multiple package manager files
+- **Heroku Deployment**: Made `ADMIN_EMAIL` and `ADMIN_PASSWORD` optional in Settings
+  - App can now start without these variables after initial admin user creation
+  - Prevents startup failures when admin credentials are not set in production
+  - Admin initialization gracefully skips if credentials are not provided
 
 ### Technical
 - Service worker implementation for offline support and asset caching

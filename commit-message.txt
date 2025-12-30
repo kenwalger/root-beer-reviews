@@ -1,46 +1,33 @@
-Fix Heroku build: Remove requirements.txt, use uv exclusively
+Fix Heroku startup: Make admin credentials optional
 
-This commit fixes the Heroku build error by removing requirements.txt
-and using uv as the exclusive package manager, as required by Heroku's
-updated buildpack policy.
+This commit fixes the Heroku deployment issue where the app fails to start
+because ADMIN_EMAIL and ADMIN_PASSWORD are required but not set in Heroku
+config vars.
 
-Issue Fixed:
-- Heroku build was failing with error: "Multiple Python package manager
-  files were found" (requirements.txt and uv.lock)
-- Heroku's Python buildpack no longer supports implicit package manager
-  selection (deprecated November 2024)
-- Must explicitly choose one package manager
+Issue:
+- App was crashing on Heroku with ValidationError for missing admin_email
+  and admin_password fields
+- These fields were marked as required in Settings model
+- After initial admin user creation, these aren't needed anymore
+- But the app couldn't start without them
 
 Solution:
-- Removed requirements.txt file
-- Project now uses uv exclusively via pyproject.toml and uv.lock
-- All dependencies are defined in pyproject.toml
-- uv.lock provides deterministic dependency resolution
-
-Why uv:
-- Project was already configured for uv
-- uv is fast, actively maintained, and supports lockfiles
-- Heroku's buildpack has native uv support
-- Better dependency management with lockfiles
+- Made admin_email and admin_password optional in Settings model
+- Updated initialize_admin_user() to gracefully skip if credentials not provided
+- Added informative log messages about skipping initialization
+- App can now start without admin credentials after initial setup
 
 Changes:
-- Deleted requirements.txt
-- Updated README.md to use "uv sync" instead of "uv pip install -r requirements.txt"
-- Updated SETUP.md to reflect uv-only installation
-- Updated CHANGELOG.md with build fix note
-- Updated project structure documentation
-
-Documentation Updates:
-- README.md: Changed installation instructions to "uv sync"
-- README.md: Updated project structure to show uv.lock instead of requirements.txt
-- README.md: Updated tech stack to show "uv (exclusive)"
-- SETUP.md: Updated installation steps to use "uv sync"
-- CHANGELOG.md: Added Heroku build fix entry
+- app/config.py: Changed admin_email and admin_password to Optional[str] = None
+- app/auth.py: Added check for credentials before initialization
+- README.md: Added note about optional admin credentials after initial setup
+- CHANGELOG.md: Documented the fix
 
 Impact:
-- Heroku builds will now succeed
-- Local development unchanged (already using uv)
-- No functional changes to the application
-- Cleaner dependency management with single source of truth (pyproject.toml)
+- Heroku app can now start without ADMIN_EMAIL and ADMIN_PASSWORD set
+- Initial admin user creation still works when credentials are provided
+- Better error handling and user feedback
+- No breaking changes - existing deployments continue to work
 
-This is a build/deployment fix with no impact on application functionality.
+This is a deployment fix that allows the app to start in production
+environments where admin credentials may not be set after initial setup.

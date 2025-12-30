@@ -161,6 +161,8 @@ RootBeerReviewApp/
    heroku config:set ADMIN_PASSWORD=your-password
    heroku config:set ENVIRONMENT=production
    ```
+   
+   **Note**: `ADMIN_EMAIL` and `ADMIN_PASSWORD` are only required for initial admin user creation. After the admin user is created in MongoDB, you can optionally remove these from Heroku config vars. The app will start without them, but you won't be able to create new admin users automatically.
 
 3. **Deploy**:
    ```bash

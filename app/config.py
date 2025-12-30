@@ -14,9 +14,9 @@ class Settings(BaseSettings):
     secret_key: str
     algorithm: str = "HS256"
     
-    # Admin Configuration
-    admin_email: str
-    admin_password: str
+    # Admin Configuration (optional - only needed for initial admin user creation)
+    admin_email: Optional[str] = None
+    admin_password: Optional[str] = None
     
     # Environment
     environment: str = "development"

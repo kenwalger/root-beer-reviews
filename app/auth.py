@@ -81,6 +81,12 @@ async def authenticate_admin(email: str, password: str) -> AdminUser | None:
 
 async def initialize_admin_user():
     """Initialize the admin user from environment variables if it doesn't exist."""
+    # Only initialize if admin_email and admin_password are provided
+    if not settings.admin_email or not settings.admin_password:
+        print("Skipping admin user initialization: ADMIN_EMAIL and ADMIN_PASSWORD not set")
+        print("Note: If this is the first run, set these environment variables to create the initial admin user.")
+        return
+    
     db = get_database()
     existing = await db.admin_users.find_one({"email": settings.admin_email})
     if not existing:
@@ -95,4 +101,6 @@ async def initialize_admin_user():
         }
         await db.admin_users.insert_one(admin_user)
         print(f"Initialized admin user: {settings.admin_email}")
+    else:
+        print(f"Admin user already exists: {settings.admin_email}")
 
