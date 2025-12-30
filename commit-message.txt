@@ -1,0 +1,58 @@
+Initial implementation of Root Beer Review App
+
+This commit introduces a complete, production-ready root beer review application
+with structured data modeling, admin interface, and public browsing capabilities.
+
+Features:
+- Structured review system separating objective facts, sensory ratings, and
+  subjective opinions
+- Three-tier carbonation model (sensory bite, qualitative level, optional CO₂)
+- Admin authentication with JWT session cookies and bcrypt password hashing
+- Full CRUD operations for root beers, reviews, flavor notes, and metadata
+- Public interface with filtering, sorting, and data visualization
+- Chart.js radar charts for sensory dimension visualization
+- Tailwind CSS with custom root beer theme
+- MongoDB integration with audit trails
+- Heroku deployment configuration
+
+Technical Implementation:
+- FastAPI backend with async MongoDB operations (Motor)
+- Pydantic models for data validation
+- Jinja2 server-side rendering
+- Form-based admin interface with proper form data handling
+- Environment-based configuration
+- Support for `uv` package manager with fallback to pip
+
+Dependencies:
+- FastAPI, Uvicorn for web framework
+- Motor, PyMongo for MongoDB async operations
+- Pydantic, Pydantic Settings for validation and config
+- Jinja2 for templating
+- bcrypt for password hashing (direct usage, no passlib)
+- python-jose for JWT tokens
+- Chart.js (CDN) for data visualization
+- Tailwind CSS (CDN) for styling
+
+Documentation:
+- Comprehensive README with setup instructions
+- CHANGELOG following Keep a Changelog format
+- SETUP guide with troubleshooting
+- SECRET_KEY_GENERATION guide
+- CONTRIBUTING guidelines
+- MIT License
+
+Fixes:
+- Resolved bcrypt compatibility issues by using direct bcrypt instead of passlib
+- Fixed pyproject.toml package configuration for uv builds
+- Added email-validator for Pydantic EmailStr support
+- Fixed form data handling in admin routes
+- Fixed authentication dependency injection pattern
+
+Project Structure:
+- Standard FastAPI application layout
+- Separated models, routes, templates, and static files
+- Environment variable configuration
+- Ready for Heroku deployment
+
+This is the initial working version ready for local development and deployment.
+

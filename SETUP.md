@@ -31,7 +31,16 @@ This guide will help you get the Root Beer Review App up and running.
    See `SECRET_KEY_GENERATION.md` for more options.
 
 3. **Run the app**:
+   
+   With `uv` (recommended):
    ```bash
+   uv run uvicorn app.main:app --reload
+   ```
+   
+   Or if using a virtual environment:
+   ```bash
+   # Activate venv first (if using traditional venv)
+   source venv/bin/activate  # or `venv\Scripts\activate` on Windows
    uvicorn app.main:app --reload
    ```
 
