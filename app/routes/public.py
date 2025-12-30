@@ -3,6 +3,7 @@ from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from app.database import get_database
+from app.routes.auth import get_admin_optional
 from bson import ObjectId
 from typing import Optional
 
@@ -72,6 +73,9 @@ async def homepage(request: Request):
         if rb.get("region") or rb.get("country")
     ))
     
+    # Check if user is logged in as admin
+    admin = get_admin_optional(request)
+    
     return templates.TemplateResponse(
         "public/home.html",
         {
@@ -83,6 +87,7 @@ async def homepage(request: Request):
             "current_region": region_filter,
             "sort_by": sort_by,
             "sort_order": sort_order,
+            "admin": admin,
         }
     )
 
@@ -125,6 +130,9 @@ async def view_rootbeer_public(rootbeer_id: str, request: Request):
     else:
         avg_scores = None
     
+    # Check if user is logged in as admin
+    admin = get_admin_optional(request)
+    
     return templates.TemplateResponse(
         "public/rootbeer.html",
         {
@@ -132,6 +140,7 @@ async def view_rootbeer_public(rootbeer_id: str, request: Request):
             "rootbeer": rootbeer,
             "reviews": reviews,
             "avg_scores": avg_scores,
+            "admin": admin,
         }
     )
 
@@ -162,6 +171,9 @@ async def view_review_public(review_id: str, request: Request):
             fn["_id"] = str(fn["_id"])
             flavor_notes.append(fn)
     
+    # Check if user is logged in as admin
+    admin = get_admin_optional(request)
+    
     return templates.TemplateResponse(
         "public/review.html",
         {
@@ -169,6 +181,7 @@ async def view_review_public(review_id: str, request: Request):
             "review": review,
             "rootbeer": rootbeer,
             "flavor_notes": flavor_notes,
+            "admin": admin,
         }
     )
 

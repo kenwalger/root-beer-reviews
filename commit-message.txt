@@ -1,58 +1,71 @@
-Initial implementation of Root Beer Review App
+Add PWA support, admin navigation, and data seeding
 
-This commit introduces a complete, production-ready root beer review application
-with structured data modeling, admin interface, and public browsing capabilities.
+This commit enhances the Root Beer Review App with Progressive Web App
+functionality, improved admin navigation, and automatic data seeding.
 
-Features:
-- Structured review system separating objective facts, sensory ratings, and
-  subjective opinions
-- Three-tier carbonation model (sensory bite, qualitative level, optional CO₂)
-- Admin authentication with JWT session cookies and bcrypt password hashing
-- Full CRUD operations for root beers, reviews, flavor notes, and metadata
-- Public interface with filtering, sorting, and data visualization
-- Chart.js radar charts for sensory dimension visualization
-- Tailwind CSS with custom root beer theme
-- MongoDB integration with audit trails
-- Heroku deployment configuration
+Features Added:
+
+PWA (Progressive Web App) Support:
+- Full PWA implementation with manifest.json and service worker
+- App can be installed on mobile devices (iOS/Android) and desktop browsers
+- Service worker provides offline functionality and asset caching
+- Standalone app-like experience without browser UI
+- Apple-specific meta tags for iOS home screen installation
+- PWA setup guide (PWA_SETUP.md) with detailed instructions
+
+Admin Navigation on Public Site:
+- Logged-in admins now see admin navigation links on public pages
+- Seamless navigation between public and admin interfaces
+- Admin links include: Dashboard, Manage Root Beers, Manage Reviews, Account
+- Non-blocking admin check function (get_admin_optional) for public routes
+
+Default Data Seeding:
+- Automatic seeding of default data on application startup
+- 20 default flavor notes from planning documents:
+  - Traditional: Sassafras, Sarsaparilla, Wintergreen, Licorice, Anise, Birch
+  - Sweet & Creamy: Vanilla, Caramel, Molasses, Honey, Marshmallow
+  - Spice & Herbal: Clove, Cinnamon, Nutmeg, Allspice, Ginger
+  - Other: Citrus peel, Medicinal, Earthy, Peppery
+- 5 default colors: Amber, Brown, Dark Brown, Black, Mahogany
+- 5 default serving contexts: Bottle, Can, Tap, Fountain, Growler
+- Idempotent seeding (only seeds if collections are empty)
+
+Admin Account Management:
+- New /admin/account page for changing admin password
+- Password validation and confirmation
+- No longer requires .env file changes after initial setup
+
+Improvements:
+- Enhanced cookie persistence with improved domain/path configuration
+- Better logout cookie deletion handling
+- Fixed Internal Server Error on /admin/account route (missing template)
+- Improved login persistence across navigation
 
 Technical Implementation:
-- FastAPI backend with async MongoDB operations (Motor)
-- Pydantic models for data validation
-- Jinja2 server-side rendering
-- Form-based admin interface with proper form data handling
-- Environment-based configuration
-- Support for `uv` package manager with fallback to pip
+- Service worker at /service-worker.js with root scope
+- PWA manifest.json with app metadata, icons, and shortcuts
+- Service worker registration in both public and admin templates
+- Helper function for optional admin authentication checks
+- Data seeding function (seed_data.py) called during app startup
 
-Dependencies:
-- FastAPI, Uvicorn for web framework
-- Motor, PyMongo for MongoDB async operations
-- Pydantic, Pydantic Settings for validation and config
-- Jinja2 for templating
-- bcrypt for password hashing (direct usage, no passlib)
-- python-jose for JWT tokens
-- Chart.js (CDN) for data visualization
-- Tailwind CSS (CDN) for styling
+Files Changed:
+- app/routes/auth.py: Added get_admin_optional() helper function
+- app/routes/public.py: Added admin context to all public routes
+- app/templates/base.html: Enhanced admin navigation, added PWA meta tags
+- app/templates/admin/base.html: Added PWA meta tags and service worker
+- app/templates/admin/account.html: New template for password management
+- app/seed_data.py: New module for default data seeding
+- app/main.py: Added seed_data import and service worker route
+- app/static/manifest.json: PWA manifest file
+- app/static/service-worker.js: Service worker for offline support
+- app/static/icons/README.md: Icon creation guide
 
 Documentation:
-- Comprehensive README with setup instructions
-- CHANGELOG following Keep a Changelog format
-- SETUP guide with troubleshooting
-- SECRET_KEY_GENERATION guide
-- CONTRIBUTING guidelines
-- MIT License
+- Updated CHANGELOG.md with version 0.2.0
+- Updated README.md with PWA and new features
+- Updated SETUP.md with default data and PWA info
+- Added PWA_SETUP.md with comprehensive PWA guide
 
-Fixes:
-- Resolved bcrypt compatibility issues by using direct bcrypt instead of passlib
-- Fixed pyproject.toml package configuration for uv builds
-- Added email-validator for Pydantic EmailStr support
-- Fixed form data handling in admin routes
-- Fixed authentication dependency injection pattern
-
-Project Structure:
-- Standard FastAPI application layout
-- Separated models, routes, templates, and static files
-- Environment variable configuration
-- Ready for Heroku deployment
-
-This is the initial working version ready for local development and deployment.
-
+This update makes the app installable as a native-like app on mobile
+devices and provides a better admin experience with seamless navigation
+and pre-populated default data.

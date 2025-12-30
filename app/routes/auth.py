@@ -31,6 +31,27 @@ def get_current_admin(request: Request) -> dict:
         return {"email": email}
     except HTTPException:
         raise
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+        )
+
+
+def get_admin_optional(request: Request) -> dict | None:
+    """Get current admin from session token if available, return None if not authenticated.
+    This is a non-blocking version for use in public routes."""
+    token = request.cookies.get("admin_token")
+    if not token:
+        return None
+    try:
+        payload = decode_access_token(token)
+        email: str = payload.get("sub")
+        if email is None:
+            return None
+        return {"email": email}
+    except Exception:
+        return None
 
 
 @router.get("/admin/login", response_class=HTMLResponse)
@@ -66,7 +87,9 @@ async def login(
         httponly=True,
         secure=settings.environment == "production",
         samesite="lax",
+        path="/",  # Make cookie available across all routes
         max_age=86400,  # 24 hours
+        domain=None,  # Allow cookie on localhost and all subdomains
     )
     return response
 
@@ -75,11 +98,20 @@ async def login(
 async def logout():
     """Handle admin logout."""
     response = RedirectResponse(url="/admin/login", status_code=status.HTTP_303_SEE_OTHER)
-    response.delete_cookie("admin_token")
+    response.delete_cookie(
+        "admin_token", 
+        path="/",
+        domain=None,  # Match the domain used when setting the cookie
+        samesite="lax"
+    )
     return response
 
 
 async def require_admin(request: Request) -> dict:
     """Dependency to require admin authentication."""
-    return get_current_admin(request)
+    try:
+        return get_current_admin(request)
+    except HTTPException:
+        # Re-raise to be handled by exception handler
+        raise
 
