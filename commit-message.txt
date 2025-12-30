@@ -1,43 +1,42 @@
-Fix Heroku startup and make copyright year dynamic
+Add PWA install button, responsive mobile navigation, and project roadmap
 
-This commit fixes the Heroku deployment startup failure and implements
-dynamic copyright year in templates.
+This commit adds several UX improvements and project planning enhancements:
 
-Heroku Deployment Fix:
-- Made admin_email and admin_password optional in Settings model
-- App can now start without these variables after initial admin user creation
-- Prevents startup failures when admin credentials are not set in production
-- Admin initialization gracefully skips if credentials are not provided
-- Added informative log messages about skipping initialization
+Features Added:
+- PWA Install Button: Custom install button that appears when the app is installable
+  - Desktop: Install button in navigation bar
+  - Mobile: Install button in hamburger menu
+  - Automatically shows/hides based on install prompt availability
+  - Works on both public and admin pages
 
-Dynamic Copyright Year:
-- Created shared templates module (app/templates_helpers.py) with current_year global
-- Updated all route files to use shared templates instance
-- Changed copyright in base.html from hardcoded "2025" to dynamic {{ current_year }}
-- Copyright year now automatically updates each year without code changes
+- Responsive Mobile Navigation: Hamburger menu for mobile devices
+  - Clean mobile navigation with collapsible menu
+  - Hamburger icon that animates to X when open
+  - Menu closes on outside click or item selection
+  - Works seamlessly in PWA context
+  - Fixed navigation layout issues on mobile
 
-Documentation Updates:
-- Updated CHANGELOG.md dates from 2024-12-XX to 2025-12-30
-- Updated README.md with note about optional admin credentials after initial setup
-- Added entry to CHANGELOG documenting both fixes
+- Project Roadmap: Comprehensive roadmap document (ROADMAP.md)
+  - All planned improvements organized by priority (High/Medium/Lower)
+  - Implementation notes for each feature
+  - Status tracking and complexity estimates
+  - Estimated effort hours for each task
+  - Linked from README.md
+
+Technical Changes:
+- Enhanced PWA install prompt handling with custom UI
+- Mobile-first responsive navigation pattern
+- JavaScript event handling for menu toggles and install prompts
+- Updated both public (base.html) and admin (admin/base.html) templates
 
 Files Changed:
-- app/config.py: Made admin_email and admin_password Optional[str] = None
-- app/auth.py: Added check for credentials before initialization with logging
-- app/templates_helpers.py: New shared templates module with current_year global
-- app/routes/public.py: Updated to use shared templates
-- app/routes/auth.py: Updated to use shared templates
-- app/routes/admin.py: Updated to use shared templates
-- app/templates/base.html: Changed copyright to use {{ current_year }}
-- README.md: Added note about optional admin credentials
-- CHANGELOG.md: Updated dates and added deployment fix entry
+- app/templates/base.html: Added hamburger menu and install button
+- app/templates/admin/base.html: Added hamburger menu
+- ROADMAP.md: New file with comprehensive feature roadmap
+- README.md: Added link to ROADMAP.md
+- CHANGELOG.md: Updated with version 0.2.1 changes
 
-Impact:
-- Heroku app can now start without ADMIN_EMAIL and ADMIN_PASSWORD set
-- Initial admin user creation still works when credentials are provided
-- Better error handling and user feedback
-- Copyright year is always current without manual updates
-- No breaking changes - existing deployments continue to work
-
-This fixes the Heroku startup issue and improves maintainability by making
-the copyright year dynamic.
+This addresses:
+- PWA install functionality not visible to users
+- Mobile navigation layout issues (login text placement)
+- Need for organized project planning and feature tracking

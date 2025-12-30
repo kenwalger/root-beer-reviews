@@ -35,7 +35,9 @@
         <div class="container mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
                 <a href="/" class="text-2xl font-bold hover:text-caramel transition">🍺 Root Beer Reviews</a>
-                <div class="space-x-4">
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-4">
                     <a href="/" class="hover:text-caramel transition">Home</a>
                     {% if admin %}
                     <a href="/admin" class="hover:text-caramel transition">Dashboard</a>
@@ -46,6 +48,38 @@
                     {% else %}
                     <a href="/admin/login" class="hover:text-caramel transition">Admin Login</a>
                     {% endif %}
+                    <!-- PWA Install Button (desktop) -->
+                    <button id="installButton" class="hidden bg-caramel text-vanilla px-4 py-2 rounded hover:bg-deep-brown transition">
+                        Install App
+                    </button>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuButton" class="md:hidden text-vanilla hover:text-caramel transition focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path id="menuIcon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        <path id="closeIcon" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Mobile Navigation Menu -->
+            <div id="mobileMenu" class="hidden md:hidden mt-4 pb-4 border-t border-vanilla/20">
+                <div class="flex flex-col space-y-3 pt-4">
+                    <a href="/" class="hover:text-caramel transition py-2">Home</a>
+                    {% if admin %}
+                    <a href="/admin" class="hover:text-caramel transition py-2">Dashboard</a>
+                    <a href="/admin/rootbeers" class="hover:text-caramel transition py-2">Manage Root Beers</a>
+                    <a href="/admin/reviews" class="hover:text-caramel transition py-2">Manage Reviews</a>
+                    <a href="/admin/account" class="hover:text-caramel transition py-2">Account</a>
+                    <a href="/admin/logout" class="hover:text-caramel transition py-2">Logout</a>
+                    {% else %}
+                    <a href="/admin/login" class="hover:text-caramel transition py-2">Admin Login</a>
+                    {% endif %}
+                    <!-- PWA Install Button (mobile) -->
+                    <button id="installButtonMobile" class="hidden bg-caramel text-vanilla px-4 py-2 rounded hover:bg-deep-brown transition text-left">
+                        Install App
+                    </button>
                 </div>
             </div>
         </div>
@@ -76,16 +110,80 @@
             });
         }
         
-        // Handle install prompt
+        // Handle PWA install prompt
         let deferredPrompt;
+        const installButton = document.getElementById('installButton');
+        const installButtonMobile = document.getElementById('installButtonMobile');
+        
         window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            // Prevent Chrome from automatically showing the prompt
             e.preventDefault();
             // Stash the event so it can be triggered later
             deferredPrompt = e;
-            // Optionally, show a custom install button
-            // You can add a button here to trigger the install prompt
+            // Show install buttons
+            if (installButton) installButton.classList.remove('hidden');
+            if (installButtonMobile) installButtonMobile.classList.remove('hidden');
         });
+        
+        // Handle install button clicks
+        function handleInstallClick() {
+            if (!deferredPrompt) return;
+            
+            // Show the install prompt
+            deferredPrompt.prompt();
+            
+            // Wait for the user to respond to the prompt
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                } else {
+                    console.log('User dismissed the install prompt');
+                }
+                // Clear the deferredPrompt
+                deferredPrompt = null;
+                // Hide install buttons
+                if (installButton) installButton.classList.add('hidden');
+                if (installButtonMobile) installButtonMobile.classList.add('hidden');
+            });
+        }
+        
+        if (installButton) {
+            installButton.addEventListener('click', handleInstallClick);
+        }
+        if (installButtonMobile) {
+            installButtonMobile.addEventListener('click', handleInstallClick);
+        }
+        
+        // Hide install buttons if app is already installed
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            deferredPrompt = null;
+            if (installButton) installButton.classList.add('hidden');
+            if (installButtonMobile) installButtonMobile.classList.add('hidden');
+        });
+        
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const menuIcon = document.getElementById('menuIcon');
+        const closeIcon = document.getElementById('closeIcon');
+        
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                menuIcon.classList.toggle('hidden');
+                closeIcon.classList.toggle('hidden');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!mobileMenuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
+                    mobileMenu.classList.add('hidden');
+                    menuIcon.classList.remove('hidden');
+                    closeIcon.classList.add('hidden');
+                }
+            });
+        }
     </script>
 </body>
 </html>

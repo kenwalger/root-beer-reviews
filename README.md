@@ -200,11 +200,23 @@ The app is fully configured as a Progressive Web App:
 
 See [PWA_SETUP.md](PWA_SETUP.md) for detailed setup instructions, including how to create app icons.
 
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for a detailed list of planned improvements and enhancements, including:
+
+- Text search functionality
+- Pagination
+- Root beer comparison tool
+- Image uploads
+- Advanced filtering
+- Admin dashboard enhancements
+- Export functionality
+- And more...
+
 ## Future Enhancements
 
 - Public commenting system
 - Multi-user support
-- Advanced filtering and comparison tools
 - Personal taste profiling
 - Recommendation engine
 

@@ -35,7 +35,9 @@
         <div class="container mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
                 <a href="/admin" class="text-2xl font-bold hover:text-caramel transition">🍺 Admin Panel</a>
-                <div class="space-x-4">
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-4">
                     <a href="/" class="hover:text-caramel transition">Public Site</a>
                     <a href="/admin" class="hover:text-caramel transition">Dashboard</a>
                     <a href="/admin/rootbeers" class="hover:text-caramel transition">Root Beers</a>
@@ -44,6 +46,28 @@
                     <a href="/admin/metadata" class="hover:text-caramel transition">Metadata</a>
                     <a href="/admin/account" class="hover:text-caramel transition">Account</a>
                     <a href="/admin/logout" class="hover:text-caramel transition">Logout</a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuButton" class="md:hidden text-vanilla hover:text-caramel transition focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path id="menuIcon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        <path id="closeIcon" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Mobile Navigation Menu -->
+            <div id="mobileMenu" class="hidden md:hidden mt-4 pb-4 border-t border-vanilla/20">
+                <div class="flex flex-col space-y-3 pt-4">
+                    <a href="/" class="hover:text-caramel transition py-2">Public Site</a>
+                    <a href="/admin" class="hover:text-caramel transition py-2">Dashboard</a>
+                    <a href="/admin/rootbeers" class="hover:text-caramel transition py-2">Root Beers</a>
+                    <a href="/admin/reviews" class="hover:text-caramel transition py-2">Reviews</a>
+                    <a href="/admin/flavor-notes" class="hover:text-caramel transition py-2">Flavor Notes</a>
+                    <a href="/admin/metadata" class="hover:text-caramel transition py-2">Metadata</a>
+                    <a href="/admin/account" class="hover:text-caramel transition py-2">Account</a>
+                    <a href="/admin/logout" class="hover:text-caramel transition py-2">Logout</a>
                 </div>
             </div>
         </div>
@@ -75,6 +99,29 @@
                     .catch((error) => {
                         console.log('ServiceWorker registration failed:', error);
                     });
+            });
+        }
+        
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const menuIcon = document.getElementById('menuIcon');
+        const closeIcon = document.getElementById('closeIcon');
+        
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                menuIcon.classList.toggle('hidden');
+                closeIcon.classList.toggle('hidden');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!mobileMenuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
+                    mobileMenu.classList.add('hidden');
+                    menuIcon.classList.remove('hidden');
+                    closeIcon.classList.add('hidden');
+                }
             });
         }
     </script>
