@@ -111,3 +111,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Personal taste profiling
 - Recommendation engine
 
+## [0.2.1] - 2025-12-30
+
+### Added
+- **PWA Install Button**: Custom install button that appears when the app is installable
+  - Desktop: Install button in navigation bar
+  - Mobile: Install button in hamburger menu
+  - Automatically shows/hides based on install prompt availability
+  - Works on both public and admin pages
+- **Responsive Mobile Navigation**: Hamburger menu for mobile devices
+  - Clean mobile navigation with collapsible menu
+  - Hamburger icon that animates to X when open
+  - Menu closes on outside click or item selection
+  - Works seamlessly in PWA context
+- **Project Roadmap**: Comprehensive roadmap document (ROADMAP.md)
+  - All planned improvements organized by priority
+  - Implementation notes for each feature
+  - Status tracking and complexity estimates
+  - Linked from README.md
+
+### Improved
+- **Mobile UX**: Better mobile navigation experience
+  - Fixed navigation layout issues on mobile
+  - Proper menu grouping (admin links together, login/logout separate)
+  - Touch-friendly hamburger menu
+
+### Technical
+- Enhanced PWA install prompt handling with custom UI
+- Mobile-first responsive navigation pattern
+- JavaScript event handling for menu toggles and install prompts
+
