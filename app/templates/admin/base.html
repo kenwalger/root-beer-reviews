@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin - Root Beer Review App{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sassafras': '#5C4033',
+                        'cream': '#F5E6D3',
+                        'caramel': '#D2691E',
+                        'vanilla': '#FFF8DC',
+                        'deep-brown': '#3E2723',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-cream text-deep-brown">
+    <nav class="bg-sassafras text-vanilla shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <a href="/admin" class="text-2xl font-bold hover:text-caramel transition">🍺 Admin Panel</a>
+                <div class="space-x-4">
+                    <a href="/" class="hover:text-caramel transition">Public Site</a>
+                    <a href="/admin" class="hover:text-caramel transition">Dashboard</a>
+                    <a href="/admin/rootbeers" class="hover:text-caramel transition">Root Beers</a>
+                    <a href="/admin/reviews" class="hover:text-caramel transition">Reviews</a>
+                    <a href="/admin/flavor-notes" class="hover:text-caramel transition">Flavor Notes</a>
+                    <a href="/admin/metadata" class="hover:text-caramel transition">Metadata</a>
+                    <a href="/admin/logout" class="hover:text-caramel transition">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <main class="container mx-auto px-4 py-8">
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-2">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
+

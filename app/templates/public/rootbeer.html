@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-6">
+    <a href="/" class="text-amber-700 hover:text-amber-800 mb-4 inline-block">← Back to Home</a>
+    <h1 class="text-4xl font-bold text-sassafras mb-2">{{ rootbeer.name }}</h1>
+    <p class="text-xl text-gray-600">{{ rootbeer.brand }}</p>
+    {% if rootbeer.region or rootbeer.country %}
+    <p class="text-gray-500">{{ rootbeer.region or rootbeer.country }}</p>
+    {% endif %}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Objective Facts -->
+    <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow">
+        <h2 class="text-2xl font-semibold text-sassafras mb-4">Facts</h2>
+        <dl class="space-y-3">
+            {% if rootbeer.sweetener_type %}
+            <div>
+                <dt class="font-medium text-gray-700">Sweetener</dt>
+                <dd class="text-gray-600">{{ rootbeer.sweetener_type }}</dd>
+            </div>
+            {% endif %}
+            
+            {% if rootbeer.sugar_grams_per_serving %}
+            <div>
+                <dt class="font-medium text-gray-700">Sugar</dt>
+                <dd class="text-gray-600">{{ rootbeer.sugar_grams_per_serving }}g per serving</dd>
+            </div>
+            {% endif %}
+            
+            {% if rootbeer.caffeine_mg %}
+            <div>
+                <dt class="font-medium text-gray-700">Caffeine</dt>
+                <dd class="text-gray-600">{{ rootbeer.caffeine_mg }}mg</dd>
+            </div>
+            {% endif %}
+            
+            {% if rootbeer.alcohol_content %}
+            <div>
+                <dt class="font-medium text-gray-700">Alcohol</dt>
+                <dd class="text-gray-600">{{ rootbeer.alcohol_content }}% ABV</dd>
+            </div>
+            {% endif %}
+            
+            {% if rootbeer.color %}
+            <div>
+                <dt class="font-medium text-gray-700">Color</dt>
+                <dd class="text-gray-600">{{ rootbeer.color }}</dd>
+            </div>
+            {% endif %}
+            
+            {% if rootbeer.carbonation_level %}
+            <div>
+                <dt class="font-medium text-gray-700">Carbonation</dt>
+                <dd class="text-gray-600">{{ rootbeer.carbonation_level|title }}</dd>
+            </div>
+            {% endif %}
+            
+            {% if rootbeer.estimated_co2_volumes %}
+            <div>
+                <dt class="font-medium text-gray-700">Estimated CO₂</dt>
+                <dd class="text-gray-600">~{{ rootbeer.estimated_co2_volumes }} vols</dd>
+            </div>
+            {% endif %}
+            
+            {% if rootbeer.ingredients %}
+            <div>
+                <dt class="font-medium text-gray-700">Ingredients</dt>
+                <dd class="text-gray-600 text-sm">{{ rootbeer.ingredients }}</dd>
+            </div>
+            {% endif %}
+        </dl>
+    </div>
+    
+    <!-- Average Scores & Chart -->
+    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow">
+        {% if avg_scores %}
+        <h2 class="text-2xl font-semibold text-sassafras mb-4">Average Ratings</h2>
+        <div class="mb-6">
+            <p class="text-3xl font-bold text-caramel mb-2">{{ "%.1f"|format(avg_scores.overall_score) }}/10</p>
+            <p class="text-gray-600">{{ reviews|length }} review{{ 's' if reviews|length != 1 else '' }}</p>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="radarChart"></canvas>
+        </div>
+        {% else %}
+        <p class="text-gray-500">No reviews yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Reviews -->
+<div class="bg-white p-6 rounded-lg shadow">
+    <h2 class="text-2xl font-semibold text-sassafras mb-4">Reviews ({{ reviews|length }})</h2>
+    
+    {% if reviews %}
+    <div class="space-y-6">
+        {% for review in reviews %}
+        <div class="border-b pb-6 last:border-b-0">
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <h3 class="text-xl font-semibold">{{ review.overall_score }}/10</h3>
+                    <p class="text-sm text-gray-500">
+                        {{ review.review_date.strftime('%B %d, %Y') if review.review_date else review.created_at.strftime('%B %d, %Y') }}
+                        {% if review.serving_context %}
+                        • {{ review.serving_context }}
+                        {% endif %}
+                    </p>
+                </div>
+                {% if review.would_drink_again %}
+                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">Would drink again</span>
+                {% endif %}
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4 text-sm">
+                <div>
+                    <span class="text-gray-600">Sweetness:</span>
+                    <span class="font-medium">{{ review.sweetness }}/5</span>
+                </div>
+                <div>
+                    <span class="text-gray-600">Carbonation:</span>
+                    <span class="font-medium">{{ review.carbonation_bite }}/5</span>
+                </div>
+                <div>
+                    <span class="text-gray-600">Creaminess:</span>
+                    <span class="font-medium">{{ review.creaminess }}/5</span>
+                </div>
+                <div>
+                    <span class="text-gray-600">Acidity:</span>
+                    <span class="font-medium">{{ review.acidity }}/5</span>
+                </div>
+                <div>
+                    <span class="text-gray-600">Aftertaste:</span>
+                    <span class="font-medium">{{ review.aftertaste_length }}/5</span>
+                </div>
+            </div>
+            
+            {% if review.flavor_notes_objects %}
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 mb-2">Flavor Notes:</p>
+                <div class="flex flex-wrap gap-2">
+                    {% for fn in review.flavor_notes_objects %}
+                    <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm">{{ fn.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if review.tasting_notes %}
+            <div class="prose max-w-none">
+                <p class="text-gray-700 whitespace-pre-wrap">{{ review.tasting_notes }}</p>
+            </div>
+            {% endif %}
+            
+            <a href="/reviews/{{ review._id }}" class="text-amber-700 hover:text-amber-800 text-sm mt-2 inline-block">
+                View Full Review →
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-500">No reviews yet.</p>
+    {% endif %}
+</div>
+
+{% if avg_scores %}
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const ctx = document.getElementById('radarChart');
+    const chart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Sweetness', 'Carbonation Bite', 'Creaminess', 'Acidity', 'Aftertaste Length'],
+            datasets: [{
+                label: 'Average Ratings',
+                data: [
+                    {{ "%.2f"|format(avg_scores.sweetness) }},
+                    {{ "%.2f"|format(avg_scores.carbonation_bite) }},
+                    {{ "%.2f"|format(avg_scores.creaminess) }},
+                    {{ "%.2f"|format(avg_scores.acidity) }},
+                    {{ "%.2f"|format(avg_scores.aftertaste_length) }}
+                ],
+                backgroundColor: 'rgba(212, 105, 30, 0.2)',
+                borderColor: 'rgba(212, 105, 30, 1)',
+                pointBackgroundColor: 'rgba(212, 105, 30, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(212, 105, 30, 1)'
+            }]
+        },
+        options: {
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 5,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
+{% endif %}
+{% endblock %}
+

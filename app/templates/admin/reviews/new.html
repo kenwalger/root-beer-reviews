@@ -1,0 +1,109 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-sassafras">Add New Review</h1>
+</div>
+
+<form method="POST" action="/admin/reviews" class="bg-white p-6 rounded-lg shadow space-y-6">
+    <div>
+        <label for="root_beer_id" class="block text-sm font-medium mb-2">Root Beer *</label>
+        <select id="root_beer_id" name="root_beer_id" required class="form-select">
+            <option value="">Select a root beer...</option>
+            {% for rootbeer in rootbeers %}
+            <option value="{{ rootbeer._id }}">{{ rootbeer.name }} ({{ rootbeer.brand }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div>
+        <label for="review_date" class="block text-sm font-medium mb-2">Review Date *</label>
+        <input type="date" id="review_date" name="review_date" required class="form-input">
+    </div>
+    
+    <div>
+        <label for="serving_context" class="block text-sm font-medium mb-2">Serving Context</label>
+        <select id="serving_context" name="serving_context" class="form-select">
+            <option value="">Select...</option>
+            {% for sc in serving_contexts %}
+            <option value="{{ sc.name }}">{{ sc.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="border-t pt-6">
+        <h2 class="text-xl font-semibold text-sassafras mb-4">Sensory Ratings (1-5 scale)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="sweetness" class="block text-sm font-medium mb-2">Sweetness (1-5) *</label>
+                <input type="number" id="sweetness" name="sweetness" min="1" max="5" required class="form-input">
+            </div>
+            
+            <div>
+                <label for="carbonation_bite" class="block text-sm font-medium mb-2">Carbonation Bite (1-5) *</label>
+                <input type="number" id="carbonation_bite" name="carbonation_bite" min="1" max="5" required class="form-input">
+            </div>
+            
+            <div>
+                <label for="creaminess" class="block text-sm font-medium mb-2">Creaminess (1-5) *</label>
+                <input type="number" id="creaminess" name="creaminess" min="1" max="5" required class="form-input">
+            </div>
+            
+            <div>
+                <label for="acidity" class="block text-sm font-medium mb-2">Acidity (1-5) *</label>
+                <input type="number" id="acidity" name="acidity" min="1" max="5" required class="form-input">
+            </div>
+            
+            <div>
+                <label for="aftertaste_length" class="block text-sm font-medium mb-2">Aftertaste Length (1-5) *</label>
+                <input type="number" id="aftertaste_length" name="aftertaste_length" min="1" max="5" required class="form-input">
+            </div>
+        </div>
+    </div>
+    
+    <div class="border-t pt-6">
+        <h2 class="text-xl font-semibold text-sassafras mb-4">Flavor Notes</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {% for flavor_note in flavor_notes %}
+            <label class="flex items-center">
+                <input type="checkbox" name="flavor_notes" value="{{ flavor_note._id }}" class="mr-2">
+                <span>{{ flavor_note.name }}</span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="border-t pt-6">
+        <h2 class="text-xl font-semibold text-sassafras mb-4">Subjective Opinion</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="overall_score" class="block text-sm font-medium mb-2">Overall Score (1-10) *</label>
+                <input type="number" id="overall_score" name="overall_score" min="1" max="10" required class="form-input">
+            </div>
+            
+            <div>
+                <label for="uniqueness_score" class="block text-sm font-medium mb-2">Uniqueness Score (1-10)</label>
+                <input type="number" id="uniqueness_score" name="uniqueness_score" min="1" max="10" class="form-input">
+            </div>
+            
+            <div>
+                <label for="would_drink_again" class="flex items-center">
+                    <input type="checkbox" id="would_drink_again" name="would_drink_again" checked class="mr-2">
+                    <span>Would drink again</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <div>
+        <label for="tasting_notes" class="block text-sm font-medium mb-2">Tasting Notes</label>
+        <textarea id="tasting_notes" name="tasting_notes" rows="8" class="form-textarea"></textarea>
+    </div>
+    
+    <div class="flex space-x-4">
+        <button type="submit" class="btn-primary">Create Review</button>
+        <a href="/admin/reviews" class="btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}
+

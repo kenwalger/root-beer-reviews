@@ -1,0 +1,52 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-sassafras">Flavor Notes</h1>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+    <h2 class="text-xl font-semibold text-sassafras mb-4">Add New Flavor Note</h2>
+    <form method="POST" action="/admin/flavor-notes" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="name" class="block text-sm font-medium mb-2">Name *</label>
+                <input type="text" id="name" name="name" required class="form-input">
+            </div>
+            <div>
+                <label for="category" class="block text-sm font-medium mb-2">Category</label>
+                <input type="text" id="category" name="category" placeholder="e.g., Traditional, Sweet & Creamy" class="form-input">
+            </div>
+        </div>
+        <button type="submit" class="btn-primary">Add Flavor Note</button>
+    </form>
+</div>
+
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for flavor_note in flavor_notes %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ flavor_note.name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ flavor_note.category or '-' }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <form method="POST" action="/admin/flavor-notes/{{ flavor_note._id }}/delete" 
+                          onsubmit="return confirm('Are you sure you want to delete this flavor note?');" 
+                          class="inline">
+                        <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

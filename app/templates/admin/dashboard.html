@@ -1,0 +1,63 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-sassafras">Admin Dashboard</h1>
+    <p class="text-gray-600 mt-2">Welcome, {{ admin.email }}!</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-xl font-semibold text-sassafras mb-2">Root Beers</h2>
+        <p class="text-3xl font-bold text-caramel">{{ rootbeer_count }}</p>
+        <a href="/admin/rootbeers" class="text-amber-700 hover:text-amber-800 mt-2 inline-block">View All →</a>
+    </div>
+    
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-xl font-semibold text-sassafras mb-2">Reviews</h2>
+        <p class="text-3xl font-bold text-caramel">{{ review_count }}</p>
+        <a href="/admin/reviews" class="text-amber-700 hover:text-amber-800 mt-2 inline-block">View All →</a>
+    </div>
+    
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-xl font-semibold text-sassafras mb-2">Flavor Notes</h2>
+        <p class="text-3xl font-bold text-caramel">{{ flavor_note_count }}</p>
+        <a href="/admin/flavor-notes" class="text-amber-700 hover:text-amber-800 mt-2 inline-block">View All →</a>
+    </div>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow">
+    <h2 class="text-2xl font-semibold text-sassafras mb-4">Recent Reviews</h2>
+    {% if recent_reviews %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Root Beer</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Score</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for review in recent_reviews %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ review.review_date.strftime('%Y-%m-%d') if review.review_date else review.created_at.strftime('%Y-%m-%d') }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ review.rootbeer_name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">{{ review.overall_score }}/10</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <a href="/admin/reviews/{{ review._id }}" class="text-amber-700 hover:text-amber-800">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-gray-500">No reviews yet. <a href="/admin/reviews/new" class="text-amber-700 hover:text-amber-800">Create your first review</a>!</p>
+    {% endif %}
+</div>
+{% endblock %}
+

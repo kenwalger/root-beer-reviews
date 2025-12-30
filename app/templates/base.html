@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Root Beer Review App{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sassafras': '#5C4033',
+                        'cream': '#F5E6D3',
+                        'caramel': '#D2691E',
+                        'vanilla': '#FFF8DC',
+                        'deep-brown': '#3E2723',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-cream text-deep-brown">
+    <nav class="bg-sassafras text-vanilla shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <a href="/" class="text-2xl font-bold hover:text-caramel transition">🍺 Root Beer Reviews</a>
+                <div class="space-x-4">
+                    <a href="/" class="hover:text-caramel transition">Home</a>
+                    {% if admin %}
+                    <a href="/admin" class="hover:text-caramel transition">Admin</a>
+                    <a href="/admin/logout" class="hover:text-caramel transition">Logout</a>
+                    {% else %}
+                    <a href="/admin/login" class="hover:text-caramel transition">Admin Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <main class="container mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="bg-sassafras text-vanilla mt-12 py-6">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 Root Beer Review App. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
+

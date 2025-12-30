@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-sassafras">Metadata Management</h1>
+    <p class="text-gray-600 mt-2">Manage colors and serving contexts</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Colors -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-xl font-semibold text-sassafras mb-4">Colors</h2>
+        <form method="POST" action="/admin/metadata/colors" class="mb-4">
+            <div class="flex space-x-2">
+                <input type="text" name="name" placeholder="Color name" required class="form-input flex-1">
+                <button type="submit" class="btn-primary">Add</button>
+            </div>
+        </form>
+        <div class="space-y-2">
+            {% for color in colors %}
+            <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                <span>{{ color.name }}</span>
+                <form method="POST" action="/admin/metadata/colors/{{ color._id }}/delete" 
+                      onsubmit="return confirm('Delete this color?');" class="inline">
+                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Serving Contexts -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-xl font-semibold text-sassafras mb-4">Serving Contexts</h2>
+        <form method="POST" action="/admin/metadata/serving-contexts" class="mb-4">
+            <div class="flex space-x-2">
+                <input type="text" name="name" placeholder="Serving context" required class="form-input flex-1">
+                <button type="submit" class="btn-primary">Add</button>
+            </div>
+        </form>
+        <div class="space-y-2">
+            {% for sc in serving_contexts %}
+            <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                <span>{{ sc.name }}</span>
+                <form method="POST" action="/admin/metadata/serving-contexts/{{ sc._id }}/delete" 
+                      onsubmit="return confirm('Delete this serving context?');" class="inline">
+                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

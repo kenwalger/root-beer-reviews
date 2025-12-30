@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-4xl font-bold text-sassafras mb-4">Root Beer Reviews</h1>
+    <p class="text-lg text-gray-700">A structured, data-driven exploration of root beers</p>
+</div>
+
+<!-- Filters -->
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+    <form method="GET" action="/" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <label for="brand" class="block text-sm font-medium mb-2">Brand</label>
+            <select id="brand" name="brand" class="form-select">
+                <option value="">All Brands</option>
+                {% for brand in brands %}
+                <option value="{{ brand }}" {% if current_brand == brand %}selected{% endif %}>{{ brand }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div>
+            <label for="region" class="block text-sm font-medium mb-2">Region</label>
+            <select id="region" name="region" class="form-select">
+                <option value="">All Regions</option>
+                {% for region in regions %}
+                <option value="{{ region }}" {% if current_region == region %}selected{% endif %}>{{ region }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div>
+            <label for="sort" class="block text-sm font-medium mb-2">Sort By</label>
+            <select id="sort" name="sort" class="form-select">
+                <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name</option>
+                <option value="brand" {% if sort_by == 'brand' %}selected{% endif %}>Brand</option>
+                <option value="score" {% if sort_by == 'score' %}selected{% endif %}>Score</option>
+            </select>
+        </div>
+        
+        <div>
+            <label for="order" class="block text-sm font-medium mb-2">Order</label>
+            <select id="order" name="order" class="form-select">
+                <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Ascending</option>
+                <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Descending</option>
+            </select>
+        </div>
+        
+        <div class="md:col-span-4">
+            <button type="submit" class="btn-primary">Apply Filters</button>
+            <a href="/" class="btn-secondary ml-2">Clear</a>
+        </div>
+    </form>
+</div>
+
+<!-- Root Beers List -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for rootbeer in rootbeers %}
+    <div class="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+        <h2 class="text-2xl font-bold text-sassafras mb-2">
+            <a href="/rootbeers/{{ rootbeer._id }}" class="hover:text-caramel transition">
+                {{ rootbeer.name }}
+            </a>
+        </h2>
+        <p class="text-gray-600 mb-2">{{ rootbeer.brand }}</p>
+        {% if rootbeer.region or rootbeer.country %}
+        <p class="text-sm text-gray-500 mb-4">{{ rootbeer.region or rootbeer.country }}</p>
+        {% endif %}
+        
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <p class="text-2xl font-bold text-caramel">{{ rootbeer.average_score }}/10</p>
+                <p class="text-sm text-gray-500">{{ rootbeer.review_count }} review{{ 's' if rootbeer.review_count != 1 else '' }}</p>
+            </div>
+        </div>
+        
+        <a href="/rootbeers/{{ rootbeer._id }}" class="text-amber-700 hover:text-amber-800 font-medium">
+            View Details →
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not rootbeers %}
+<div class="bg-white p-8 rounded-lg shadow text-center">
+    <p class="text-gray-500 text-lg">No root beers found. Check back soon for reviews!</p>
+</div>
+{% endif %}
+{% endblock %}
+

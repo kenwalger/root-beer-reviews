@@ -1,0 +1,124 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-sassafras">Review</h1>
+    {% if rootbeer %}
+    <a href="/reviews/{{ review._id }}" class="text-blue-600 hover:text-blue-800" target="_blank">View Public Page</a>
+    {% endif %}
+</div>
+
+<form method="POST" action="/admin/reviews/{{ review._id }}" class="bg-white p-6 rounded-lg shadow space-y-6">
+    <div>
+        <label for="root_beer_id" class="block text-sm font-medium mb-2">Root Beer *</label>
+        <select id="root_beer_id" name="root_beer_id" required class="form-select">
+            <option value="">Select a root beer...</option>
+            {% for rootbeer_option in rootbeers %}
+            <option value="{{ rootbeer_option._id }}" {% if review.root_beer_id == rootbeer_option._id %}selected{% endif %}>
+                {{ rootbeer_option.name }} ({{ rootbeer_option.brand }})
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div>
+        <label for="review_date" class="block text-sm font-medium mb-2">Review Date *</label>
+        <input type="date" id="review_date" name="review_date" 
+               value="{{ review.review_date.strftime('%Y-%m-%d') if review.review_date else review.created_at.strftime('%Y-%m-%d') }}" 
+               required class="form-input">
+    </div>
+    
+    <div>
+        <label for="serving_context" class="block text-sm font-medium mb-2">Serving Context</label>
+        <select id="serving_context" name="serving_context" class="form-select">
+            <option value="">Select...</option>
+            {% for sc in serving_contexts %}
+            <option value="{{ sc.name }}" {% if review.serving_context == sc.name %}selected{% endif %}>{{ sc.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="border-t pt-6">
+        <h2 class="text-xl font-semibold text-sassafras mb-4">Sensory Ratings (1-5 scale)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="sweetness" class="block text-sm font-medium mb-2">Sweetness (1-5) *</label>
+                <input type="number" id="sweetness" name="sweetness" value="{{ review.sweetness }}" min="1" max="5" required class="form-input">
+            </div>
+            
+            <div>
+                <label for="carbonation_bite" class="block text-sm font-medium mb-2">Carbonation Bite (1-5) *</label>
+                <input type="number" id="carbonation_bite" name="carbonation_bite" value="{{ review.carbonation_bite }}" min="1" max="5" required class="form-input">
+            </div>
+            
+            <div>
+                <label for="creaminess" class="block text-sm font-medium mb-2">Creaminess (1-5) *</label>
+                <input type="number" id="creaminess" name="creaminess" value="{{ review.creaminess }}" min="1" max="5" required class="form-input">
+            </div>
+            
+            <div>
+                <label for="acidity" class="block text-sm font-medium mb-2">Acidity (1-5) *</label>
+                <input type="number" id="acidity" name="acidity" value="{{ review.acidity }}" min="1" max="5" required class="form-input">
+            </div>
+            
+            <div>
+                <label for="aftertaste_length" class="block text-sm font-medium mb-2">Aftertaste Length (1-5) *</label>
+                <input type="number" id="aftertaste_length" name="aftertaste_length" value="{{ review.aftertaste_length }}" min="1" max="5" required class="form-input">
+            </div>
+        </div>
+    </div>
+    
+    <div class="border-t pt-6">
+        <h2 class="text-xl font-semibold text-sassafras mb-4">Flavor Notes</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {% for flavor_note in all_flavor_notes %}
+            <label class="flex items-center">
+                <input type="checkbox" name="flavor_notes" value="{{ flavor_note._id }}" 
+                       {% if flavor_note._id in review.flavor_notes %}checked{% endif %} class="mr-2">
+                <span>{{ flavor_note.name }}</span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="border-t pt-6">
+        <h2 class="text-xl font-semibold text-sassafras mb-4">Subjective Opinion</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="overall_score" class="block text-sm font-medium mb-2">Overall Score (1-10) *</label>
+                <input type="number" id="overall_score" name="overall_score" value="{{ review.overall_score }}" min="1" max="10" required class="form-input">
+            </div>
+            
+            <div>
+                <label for="uniqueness_score" class="block text-sm font-medium mb-2">Uniqueness Score (1-10)</label>
+                <input type="number" id="uniqueness_score" name="uniqueness_score" value="{{ review.uniqueness_score or '' }}" min="1" max="10" class="form-input">
+            </div>
+            
+            <div>
+                <label for="would_drink_again" class="flex items-center">
+                    <input type="checkbox" id="would_drink_again" name="would_drink_again" 
+                           {% if review.would_drink_again %}checked{% endif %} class="mr-2">
+                    <span>Would drink again</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <div>
+        <label for="tasting_notes" class="block text-sm font-medium mb-2">Tasting Notes</label>
+        <textarea id="tasting_notes" name="tasting_notes" rows="8" class="form-textarea">{{ review.tasting_notes or '' }}</textarea>
+    </div>
+    
+    <div class="flex space-x-4">
+        <button type="submit" class="btn-primary">Update Review</button>
+        <a href="/admin/reviews" class="btn-secondary">Back to List</a>
+    </div>
+</form>
+
+<div class="mt-8">
+    <form method="POST" action="/admin/reviews/{{ review._id }}/delete" onsubmit="return confirm('Are you sure you want to delete this review? This action cannot be undone.');">
+        <button type="submit" class="btn-danger">Delete Review</button>
+    </form>
+</div>
+{% endblock %}
+
