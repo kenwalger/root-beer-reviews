@@ -1,15 +1,14 @@
 """Authentication routes."""
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
 from fastapi.responses import RedirectResponse, HTMLResponse
-from fastapi.templating import Jinja2Templates
 from app.auth import authenticate_admin, create_access_token, decode_access_token
 from app.database import get_database
+from app.templates_helpers import templates
 from datetime import timedelta
 from app.config import settings
 
 
 router = APIRouter()
-templates = Jinja2Templates(directory="app/templates")
 
 
 def get_current_admin(request: Request) -> dict:

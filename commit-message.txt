@@ -1,33 +1,43 @@
-Fix Heroku startup: Make admin credentials optional
+Fix Heroku startup and make copyright year dynamic
 
-This commit fixes the Heroku deployment issue where the app fails to start
-because ADMIN_EMAIL and ADMIN_PASSWORD are required but not set in Heroku
-config vars.
+This commit fixes the Heroku deployment startup failure and implements
+dynamic copyright year in templates.
 
-Issue:
-- App was crashing on Heroku with ValidationError for missing admin_email
-  and admin_password fields
-- These fields were marked as required in Settings model
-- After initial admin user creation, these aren't needed anymore
-- But the app couldn't start without them
-
-Solution:
+Heroku Deployment Fix:
 - Made admin_email and admin_password optional in Settings model
-- Updated initialize_admin_user() to gracefully skip if credentials not provided
+- App can now start without these variables after initial admin user creation
+- Prevents startup failures when admin credentials are not set in production
+- Admin initialization gracefully skips if credentials are not provided
 - Added informative log messages about skipping initialization
-- App can now start without admin credentials after initial setup
 
-Changes:
-- app/config.py: Changed admin_email and admin_password to Optional[str] = None
-- app/auth.py: Added check for credentials before initialization
-- README.md: Added note about optional admin credentials after initial setup
-- CHANGELOG.md: Documented the fix
+Dynamic Copyright Year:
+- Created shared templates module (app/templates_helpers.py) with current_year global
+- Updated all route files to use shared templates instance
+- Changed copyright in base.html from hardcoded "2025" to dynamic {{ current_year }}
+- Copyright year now automatically updates each year without code changes
+
+Documentation Updates:
+- Updated CHANGELOG.md dates from 2024-12-XX to 2025-12-30
+- Updated README.md with note about optional admin credentials after initial setup
+- Added entry to CHANGELOG documenting both fixes
+
+Files Changed:
+- app/config.py: Made admin_email and admin_password Optional[str] = None
+- app/auth.py: Added check for credentials before initialization with logging
+- app/templates_helpers.py: New shared templates module with current_year global
+- app/routes/public.py: Updated to use shared templates
+- app/routes/auth.py: Updated to use shared templates
+- app/routes/admin.py: Updated to use shared templates
+- app/templates/base.html: Changed copyright to use {{ current_year }}
+- README.md: Added note about optional admin credentials
+- CHANGELOG.md: Updated dates and added deployment fix entry
 
 Impact:
 - Heroku app can now start without ADMIN_EMAIL and ADMIN_PASSWORD set
 - Initial admin user creation still works when credentials are provided
 - Better error handling and user feedback
+- Copyright year is always current without manual updates
 - No breaking changes - existing deployments continue to work
 
-This is a deployment fix that allows the app to start in production
-environments where admin credentials may not be set after initial setup.
+This fixes the Heroku startup issue and improves maintainability by making
+the copyright year dynamic.

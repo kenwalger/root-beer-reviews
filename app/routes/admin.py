@@ -1,19 +1,18 @@
 """Admin routes for managing root beers, reviews, and metadata."""
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from app.database import get_database
 from app.models.rootbeer import RootBeerCreate, RootBeerUpdate
 from app.models.review import ReviewCreate, ReviewUpdate
 from app.models.flavor_note import FlavorNoteCreate
 from app.routes.auth import require_admin
+from app.templates_helpers import templates
 from bson import ObjectId
 from datetime import datetime
 from typing import List, Optional
 
 
 router = APIRouter()
-templates = Jinja2Templates(directory="app/templates")
 
 
 @router.get("/admin", response_class=HTMLResponse)

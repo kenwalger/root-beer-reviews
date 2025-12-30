@@ -1,15 +1,14 @@
 """Public routes for viewing root beers and reviews."""
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from app.database import get_database
 from app.routes.auth import get_admin_optional
+from app.templates_helpers import templates
 from bson import ObjectId
 from typing import Optional
 
 
 router = APIRouter()
-templates = Jinja2Templates(directory="app/templates")
 
 
 @router.get("/", response_class=HTMLResponse)
