@@ -169,18 +169,45 @@
         const closeIcon = document.getElementById('closeIcon');
         
         if (mobileMenuButton && mobileMenu) {
-            mobileMenuButton.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-                menuIcon.classList.toggle('hidden');
-                closeIcon.classList.toggle('hidden');
-            });
+            let outsideClickHandler = null;
             
-            // Close menu when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!mobileMenuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
-                    mobileMenu.classList.add('hidden');
-                    menuIcon.classList.remove('hidden');
-                    closeIcon.classList.add('hidden');
+            function openMenu() {
+                mobileMenu.classList.remove('hidden');
+                menuIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+                
+                // Only attach outside click listener when menu is open
+                if (!outsideClickHandler) {
+                    outsideClickHandler = (e) => {
+                        if (!mobileMenuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
+                            closeMenu();
+                        }
+                    };
+                    // Use capture phase and small delay to avoid immediate close on menu button click
+                    setTimeout(() => {
+                        document.addEventListener('click', outsideClickHandler, true);
+                    }, 0);
+                }
+            }
+            
+            function closeMenu() {
+                mobileMenu.classList.add('hidden');
+                menuIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+                
+                // Remove outside click listener when menu is closed
+                if (outsideClickHandler) {
+                    document.removeEventListener('click', outsideClickHandler, true);
+                    outsideClickHandler = null;
+                }
+            }
+            
+            mobileMenuButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (mobileMenu.classList.contains('hidden')) {
+                    openMenu();
+                } else {
+                    closeMenu();
                 }
             });
         }
