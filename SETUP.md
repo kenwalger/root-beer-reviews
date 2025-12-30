@@ -67,8 +67,20 @@ This guide will help you get the Root Beer Review App up and running.
 ## Initial Setup
 
 On first run, the app will automatically:
-- Create the admin user from environment variables
+- Create the admin user from environment variables (if it doesn't exist)
+- Seed default data (flavor notes, colors, serving contexts) if collections are empty
 - Set up database collections as needed
+
+**Note:** Once the admin user is created in MongoDB, the `ADMIN_PASSWORD` in your `.env` file is only used for initial account creation. You can change your password later through the admin interface at `/admin/account`. The password stored in MongoDB takes precedence after the initial setup.
+
+### Default Data
+
+The app automatically seeds default data on startup (only if collections are empty):
+- **20 Flavor Notes**: Sassafras, Vanilla, Cinnamon, and more from the planning documents
+- **5 Colors**: Amber, Brown, Dark Brown, Black, Mahogany
+- **5 Serving Contexts**: Bottle, Can, Tap, Fountain, Growler
+
+You can add more options through the admin interface at `/admin/flavor-notes` and `/admin/metadata`.
 
 ## Default Collections
 
@@ -99,10 +111,20 @@ The app uses these MongoDB collections:
 
 ## Next Steps
 
-1. Log in to admin panel
-2. Add some flavor notes (e.g., "Vanilla", "Sassafras")
-3. Add some colors (e.g., "Dark Brown", "Amber")
-4. Add serving contexts (e.g., "Bottle", "Can", "Tap")
-5. Create your first root beer entry
-6. Write your first review!
+1. Log in to admin panel at `/admin/login`
+2. **Default data is already seeded!** You'll find:
+   - 20 flavor notes ready to use
+   - 5 colors and 5 serving contexts
+   - You can add more through the admin interface
+3. Create your first root beer entry
+4. Write your first review!
+
+## Progressive Web App (PWA)
+
+The app is configured as a PWA and can be installed on mobile devices and desktop browsers:
+
+- **Mobile**: Open in Safari/Chrome → Share → "Add to Home Screen"
+- **Desktop**: Look for install icon in Chrome/Edge address bar
+
+See [PWA_SETUP.md](PWA_SETUP.md) for detailed instructions and icon setup.
 

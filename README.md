@@ -10,6 +10,9 @@ A structured, data-driven web application for reviewing root beers. This app dis
 - **Admin Interface**: Full CRUD operations for root beers, reviews, and metadata
 - **Public Interface**: Browse and filter root beers with beautiful, themed UI
 - **Audit Trails**: Track creation and updates with timestamps and user information
+- **Progressive Web App (PWA)**: Installable on mobile and desktop with offline support
+- **Admin Navigation**: Seamless admin access from public pages when logged in
+- **Default Data Seeding**: Pre-populated flavor notes, colors, and serving contexts
 
 ## Tech Stack
 
@@ -21,6 +24,7 @@ A structured, data-driven web application for reviewing root beers. This app dis
 - **Authentication**: JWT-based session cookies, bcrypt password hashing
 - **Package Management**: `uv` (with fallback to pip)
 - **Deployment**: Heroku-ready
+- **PWA**: Service worker, manifest, offline support
 
 ## Project Structure
 
@@ -47,7 +51,10 @@ RootBeerReviewApp/
 │   │   ├── admin/
 │   │   └── public/
 │   └── static/              # Static files
-│       └── css/
+│       ├── css/
+│       ├── icons/           # PWA icons
+│       ├── manifest.json    # PWA manifest
+│       └── service-worker.js # PWA service worker
 ├── planning/                # Planning documents
 ├── pyproject.toml          # Project configuration (uv)
 ├── requirements.txt        # Python dependencies
@@ -117,7 +124,9 @@ RootBeerReviewApp/
    - Add/edit root beers with objective attributes
    - Create reviews with structured sensory ratings
    - Manage flavor notes, colors, and serving contexts
+   - Change your password at `/admin/account`
    - View all data with audit trails
+3. **Admin Navigation**: When logged in, admin navigation links appear on public pages for easy access
 
 ### Public Interface
 
@@ -126,6 +135,7 @@ RootBeerReviewApp/
 - View detailed root beer pages with all reviews
 - See radar charts visualizing sensory dimensions
 - Read individual reviews with full tasting notes
+- **Install as PWA**: Add to home screen on mobile or install on desktop for app-like experience
 
 ## Data Model
 
@@ -144,6 +154,7 @@ RootBeerReviewApp/
 ### Flavor Notes
 - Predefined list that admins can extend
 - Categories: Traditional, Sweet & Creamy, Spice & Herbal, Other
+- **Default Seeding**: 20 default flavor notes are automatically seeded on first run
 
 ## Deployment to Heroku
 
@@ -186,6 +197,17 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - Document functions and classes
 - Keep functions focused and small
 
+## Progressive Web App (PWA)
+
+The app is fully configured as a Progressive Web App:
+
+- **Installable**: Add to home screen on iOS/Android or install on desktop browsers
+- **Offline Support**: Cached pages work without internet connection
+- **App-like Experience**: Opens in standalone mode without browser UI
+- **Fast Loading**: Service worker caches static assets
+
+See [PWA_SETUP.md](PWA_SETUP.md) for detailed setup instructions, including how to create app icons.
+
 ## Future Enhancements
 
 - Public commenting system
@@ -193,7 +215,6 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - Advanced filtering and comparison tools
 - Personal taste profiling
 - Recommendation engine
-- Mobile app (PWA)
 
 ## License
 

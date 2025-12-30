@@ -49,6 +49,8 @@ def decode_access_token(token: str) -> dict:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         return payload
     except JWTError:
+        # Raise exception that will be caught and handled by get_current_admin
+        from fastapi import HTTPException, status
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",

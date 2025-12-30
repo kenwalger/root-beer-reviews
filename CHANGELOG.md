@@ -52,6 +52,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added email-validator dependency for Pydantic EmailStr validation
 - Fixed authentication dependency injection pattern
 
+## [0.2.0] - 2024-12-XX
+
+### Added
+- **Progressive Web App (PWA) Support**: Full PWA implementation with manifest, service worker, and installability
+  - App can be installed on mobile devices and desktop browsers
+  - Offline functionality with service worker caching
+  - Standalone app-like experience
+  - PWA setup guide (PWA_SETUP.md)
+- **Admin Navigation on Public Site**: Logged-in admins now see admin navigation links on public pages
+  - Dashboard, Manage Root Beers, Manage Reviews, Account links visible when authenticated
+  - Seamless navigation between public and admin interfaces
+- **Default Data Seeding**: Automatic seeding of default data on startup
+  - 20 default flavor notes from planning documents (Sassafras, Vanilla, Cinnamon, etc.)
+  - 5 default colors (Amber, Brown, Dark Brown, Black, Mahogany)
+  - 5 default serving contexts (Bottle, Can, Tap, Fountain, Growler)
+  - Only seeds if collections are empty (idempotent)
+- **Admin Account Management**: In-app password change functionality
+  - New `/admin/account` page for changing admin password
+  - Password validation and confirmation
+  - No longer requires `.env` file changes after initial setup
+
+### Improved
+- **Cookie Persistence**: Enhanced cookie settings for better cross-route persistence
+  - Improved cookie domain and path configuration
+  - Better logout cookie deletion handling
+- **Authentication Helper**: Added `get_admin_optional()` function for non-blocking admin checks
+  - Allows public routes to check admin status without raising exceptions
+  - Enables conditional admin UI rendering
+
+### Fixed
+- Fixed Internal Server Error on `/admin/account` route (missing template)
+- Improved login persistence across navigation between public and admin pages
+
+### Technical
+- Service worker implementation for offline support and asset caching
+- PWA manifest.json with app metadata, icons, and shortcuts
+- Apple-specific meta tags for iOS home screen installation
+- Service worker registration in both public and admin templates
+
 ## [Unreleased]
 
 ### Planned
@@ -60,5 +99,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Advanced comparison tools
 - Personal taste profiling
 - Recommendation engine
-- PWA support for mobile
 

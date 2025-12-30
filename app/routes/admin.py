@@ -613,3 +613,104 @@ async def delete_serving_context(
     
     return RedirectResponse(url="/admin/metadata", status_code=303)
 
+
+# Admin Account Management
+@router.get("/admin/account", response_class=HTMLResponse)
+async def admin_account(request: Request, admin: dict = Depends(require_admin)):
+    """Admin account settings page."""
+    db = get_database()
+    user = await db.admin_users.find_one({"email": admin["email"]})
+    if user:
+        user["_id"] = str(user["_id"])
+    
+    return templates.TemplateResponse(
+        "admin/account.html",
+        {
+            "request": request,
+            "admin": admin,
+            "user": user,
+        }
+    )
+
+
+@router.post("/admin/account/change-password")
+async def change_password(
+    request: Request,
+    admin: dict = Depends(require_admin),
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+):
+    """Change admin password."""
+    from app.auth import verify_password, get_password_hash, get_admin_user_by_email
+    
+    # Verify current password
+    user = await get_admin_user_by_email(admin["email"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not verify_password(current_password, user.hashed_password):
+        db = get_database()
+        user_doc = await db.admin_users.find_one({"email": admin["email"]})
+        if user_doc:
+            user_doc["_id"] = str(user_doc["_id"])
+        return templates.TemplateResponse(
+            "admin/account.html",
+            {
+                "request": request,
+                "admin": admin,
+                "user": user_doc,
+                "error": "Current password is incorrect",
+            },
+            status_code=400
+        )
+    
+    # Validate new password
+    if new_password != confirm_password:
+        db = get_database()
+        user_doc = await db.admin_users.find_one({"email": admin["email"]})
+        if user_doc:
+            user_doc["_id"] = str(user_doc["_id"])
+        return templates.TemplateResponse(
+            "admin/account.html",
+            {
+                "request": request,
+                "admin": admin,
+                "user": user_doc,
+                "error": "New passwords do not match",
+            },
+            status_code=400
+        )
+    
+    if len(new_password) < 8:
+        db = get_database()
+        user_doc = await db.admin_users.find_one({"email": admin["email"]})
+        if user_doc:
+            user_doc["_id"] = str(user_doc["_id"])
+        return templates.TemplateResponse(
+            "admin/account.html",
+            {
+                "request": request,
+                "admin": admin,
+                "user": user_doc,
+                "error": "Password must be at least 8 characters long",
+            },
+            status_code=400
+        )
+    
+    # Update password
+    db = get_database()
+    hashed_password = get_password_hash(new_password)
+    await db.admin_users.update_one(
+        {"email": admin["email"]},
+        {
+            "$set": {
+                "hashed_password": hashed_password,
+                "updated_at": datetime.utcnow(),
+                "updated_by": admin["email"],
+            }
+        }
+    )
+    
+    return RedirectResponse(url="/admin/account?success=Password updated successfully", status_code=303)
+

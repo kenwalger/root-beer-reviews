@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A structured, data-driven root beer review application">
+    <meta name="theme-color" content="#5C4033">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Root Beer Reviews">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
     <title>{% block title %}Root Beer Review App{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -31,7 +38,10 @@
                 <div class="space-x-4">
                     <a href="/" class="hover:text-caramel transition">Home</a>
                     {% if admin %}
-                    <a href="/admin" class="hover:text-caramel transition">Admin</a>
+                    <a href="/admin" class="hover:text-caramel transition">Dashboard</a>
+                    <a href="/admin/rootbeers" class="hover:text-caramel transition">Manage Root Beers</a>
+                    <a href="/admin/reviews" class="hover:text-caramel transition">Manage Reviews</a>
+                    <a href="/admin/account" class="hover:text-caramel transition">Account</a>
                     <a href="/admin/logout" class="hover:text-caramel transition">Logout</a>
                     {% else %}
                     <a href="/admin/login" class="hover:text-caramel transition">Admin Login</a>
@@ -52,6 +62,31 @@
     </footer>
     
     {% block extra_scripts %}{% endblock %}
+    <script>
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+                    .then((registration) => {
+                        console.log('ServiceWorker registration successful:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+        
+        // Handle install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            // Optionally, show a custom install button
+            // You can add a button here to trigger the install prompt
+        });
+    </script>
 </body>
 </html>
 
