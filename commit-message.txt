@@ -1,43 +1,24 @@
-feat: Add S3 image upload support and fix image display issues
+fix: Improve S3 URL parsing and update documentation
 
-This commit implements full S3 image upload functionality and fixes several
-image-related display and template issues.
-
-Features Added:
-- S3 image upload during root beer creation and after
-- Support for multiple images per root beer with primary image selection
-- Image gallery display in both admin and public views
-- Automatic S3 deletion when images are removed from the app
-- Comprehensive S3 setup guide with troubleshooting
-
-Bug Fixes:
-- Fixed template syntax error (missing endblock) causing Internal Server Error
-- Fixed image display in public root beer view
-- Fixed S3 ACL compatibility (removed ACL, using bucket policy)
-- Fixed S3 URL format for us-east-1 region
-- Improved image field initialization and validation
+This commit improves the S3 URL parsing fallback logic to handle edge cases
+and updates documentation to reflect the image upload feature.
 
 Improvements:
-- Enhanced error handling for S3 operations with proper logging
-- Better image handling with robust None value checks
-- Automatic primary image assignment if not set
-- Graceful fallback if S3 deletion fails
+- Enhanced S3 URL parsing fallback logic to handle edge cases
+  - More robust validation for S3 URLs
+  - Better key extraction using amazonaws.com as delimiter
+  - Handles bucket names containing ".s3." correctly
+  - Improved error messages for invalid URLs
 
-Technical:
-- Added boto3 dependency for S3 operations
-- Proper async/await pattern for S3 operations
-- Support for multiple AWS regions with correct URL formats
-- File validation (type, size) on server side
+Documentation Updates:
+- Updated CHANGELOG.md with URL parsing improvement
+- Updated README.md:
+  - Added image uploads to features list
+  - Added S3 to tech stack
+  - Removed "Image uploads" from roadmap (now completed)
+  - Added S3 environment variables to .env example
 
 Files Changed:
-- app/routes/admin.py: Added image upload/delete routes, improved image handling
-- app/routes/public.py: Fixed image field initialization, added primary image fallback
-- app/utils/images.py: S3 upload/delete utilities with error handling
-- app/templates/admin/rootbeers/new.html: Added image upload fields
-- app/templates/admin/rootbeers/view.html: Image gallery with management controls
-- app/templates/public/rootbeer.html: Fixed template syntax, improved image display
-- app/models/rootbeer.py: Added images and primary_image fields
-- S3_SETUP.md: Comprehensive setup guide with troubleshooting
-- CHANGELOG.md: Added version 0.2.2
-- ROADMAP.md: Marked image uploads as completed
-
+- app/utils/images.py: Improved URL parsing fallback logic with better validation
+- CHANGELOG.md: Added URL parsing improvement to version 0.2.2
+- README.md: Updated features, tech stack, roadmap, and environment variables
