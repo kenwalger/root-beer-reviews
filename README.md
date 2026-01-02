@@ -10,7 +10,7 @@ A structured, data-driven web application for reviewing root beers. This app dis
 - **Admin Interface**: Full CRUD operations for root beers, reviews, and metadata
 - **Public Interface**: Browse and filter root beers with beautiful, themed UI
 - **Audit Trails**: Track creation and updates with timestamps and user information
-- **Progressive Web App (PWA)**: Installable on mobile and desktop with offline support
+- **Progressive Web App (PWA)**: Installable on mobile and desktop with offline support and install prompts
 - **Admin Navigation**: Seamless admin access from public pages when logged in
 - **Default Data Seeding**: Pre-populated flavor notes, colors, and serving contexts
 - **Image Uploads**: Upload multiple images per root beer with S3 storage, primary image selection, and automatic cleanup

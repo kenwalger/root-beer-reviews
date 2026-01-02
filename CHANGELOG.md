@@ -148,6 +148,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Image URL construction for different AWS regions
 - Proper async/await pattern for S3 operations
 
+## [0.2.3] - 2025-12-30
+
+### Fixed
+- **PWA Icons**: Generated all required PWA icon sizes to enable Chrome install prompt
+  - Created icon generation script (`generate_icons.py`) for easy icon creation
+  - Generated all 8 required icon sizes (72x72 through 512x512)
+  - Resolved 404 errors for missing icons that prevented PWA installation
+- **Meta Tags**: Fixed deprecated `apple-mobile-web-app-capable` meta tag
+  - Added new `mobile-web-app-capable` meta tag as recommended
+  - Updated both public and admin templates
+
+### Added
+- **Icon Generation Script**: `generate_icons.py` for creating PWA icons
+  - Generates all required icon sizes with root beer theme colors
+  - Uses Pillow for image generation
+  - Creates icons with root beer emoji (🍺) on sassafras background
+
+### Technical
+- Icon generation utility for maintaining PWA icons
+- Proper meta tag configuration for modern PWA standards
+
 ## [Unreleased]
 
 ### Planned
