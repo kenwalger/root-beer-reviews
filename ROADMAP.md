@@ -214,6 +214,7 @@ This document outlines planned improvements and enhancements for the Root Beer R
 - ✅ Dynamic copyright year
 - ✅ Responsive mobile navigation (hamburger menu)
 - ✅ PWA install button
+- ✅ PWA icons (all required sizes generated)
 - ✅ S3 image uploads with multiple images per root beer
 - ✅ Image gallery display in admin and public views
 - ✅ Primary image selection
