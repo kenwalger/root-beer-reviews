@@ -148,10 +148,8 @@ async def delete_image(image_url: str) -> bool:
             # Try to extract from any S3 URL format (fallback for edge cases)
             # Handle various S3 URL formats: bucket.s3.region.amazonaws.com/key or bucket.s3.amazonaws.com/key
             if '.s3.' in image_url and 'amazonaws.com' in image_url:
-                # Extract everything after amazonaws.com/
-                if '/amazonaws.com/' in image_url:
-                    key = image_url.split('/amazonaws.com/')[-1]
-                elif '.amazonaws.com/' in image_url:
+                # Extract everything after .amazonaws.com/ (S3 URLs use subdomain format with dots)
+                if '.amazonaws.com/' in image_url:
                     key = image_url.split('.amazonaws.com/')[-1]
                 else:
                     logger.warning(f"Could not parse S3 URL format: {image_url}")

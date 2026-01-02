@@ -1,12 +1,18 @@
 fix: Improve S3 URL parsing and update documentation
 
-This commit improves the S3 URL parsing fallback logic to handle edge cases
-and updates documentation to reflect the image upload feature.
+This commit fixes the S3 URL parsing fallback logic by removing unreachable
+code and updates documentation to reflect the image upload feature.
+
+Bug Fixes:
+- Removed unreachable condition in S3 URL parsing fallback logic
+  - Removed check for `/amazonaws.com/` (path format) which never matches S3 URLs
+  - S3 URLs use subdomain format (`.amazonaws.com/`) not path format
+  - Simplified fallback logic to only check for valid S3 URL patterns
 
 Improvements:
 - Enhanced S3 URL parsing fallback logic to handle edge cases
   - More robust validation for S3 URLs
-  - Better key extraction using amazonaws.com as delimiter
+  - Better key extraction using `.amazonaws.com/` as delimiter
   - Handles bucket names containing ".s3." correctly
   - Improved error messages for invalid URLs
 
