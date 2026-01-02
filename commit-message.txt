@@ -22,8 +22,15 @@ Files Changed:
 - app/templates/base.html: Added mobile-web-app-capable meta tag
 - app/templates/admin/base.html: Added mobile-web-app-capable meta tag
 - app/static/icons/: Generated all 8 required icon sizes
-- generate_icons.py: New icon generation utility script
+- app/static/icons/site.webmanifest: Removed unused manifest file with incorrect placeholder content
+- generate_icons.py: New icon generation utility script with improved exception handling
 - CHANGELOG.md: Added version 0.2.3
 - ROADMAP.md: Marked PWA icons as completed
 - README.md: Updated PWA feature description
+
+Improvements:
+- Improved exception handling in icon generation script
+  - More explicit exception types (OSError, IOError)
+  - Cleaner font loading logic with proper fallback chain
+  - Removed nested try-except blocks for better readability
 
