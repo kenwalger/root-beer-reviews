@@ -34,18 +34,22 @@ def create_icon(size):
     draw = ImageDraw.Draw(img)
     
     # Try to use a font, fallback to default if not available
-    try:
-        # Try to use a system font that supports emoji
-        font_size = int(size * 0.6)
+    font_size = int(size * 0.6)
+    font = ImageFont.load_default()  # Default fallback
+    
+    # Try to use a system font that supports emoji
+    emoji_font_paths = [
+        "/System/Library/Fonts/Apple Color Emoji.ttc",  # macOS
+        "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",  # Linux
+    ]
+    
+    for font_path in emoji_font_paths:
         try:
-            font = ImageFont.truetype("/System/Library/Fonts/Apple Color Emoji.ttc", font_size)
-        except:
-            try:
-                font = ImageFont.truetype("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf", font_size)
-            except:
-                font = ImageFont.load_default()
-    except:
-        font = ImageFont.load_default()
+            font = ImageFont.truetype(font_path, font_size)
+            break
+        except (OSError, IOError):
+            # Font file doesn't exist or can't be loaded, try next
+            continue
     
     # Draw root beer emoji or text
     text = "🍺"

@@ -158,12 +158,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Meta Tags**: Fixed deprecated `apple-mobile-web-app-capable` meta tag
   - Added new `mobile-web-app-capable` meta tag as recommended
   - Updated both public and admin templates
+- **Cleanup**: Removed unused `site.webmanifest` file from icons directory
+  - File contained placeholder content with incorrect icon paths
+  - Conflicts with existing `app/static/manifest.json`
 
 ### Added
 - **Icon Generation Script**: `generate_icons.py` for creating PWA icons
   - Generates all required icon sizes with root beer theme colors
   - Uses Pillow for image generation
   - Creates icons with root beer emoji (🍺) on sassafras background
+  - Improved exception handling with explicit error types
+
+### Improved
+- **Code Quality**: Enhanced exception handling in icon generation script
+  - More explicit exception types (OSError, IOError) instead of bare except
+  - Cleaner font loading logic with proper fallback chain
+  - Removed nested try-except blocks for better readability
 
 ### Technical
 - Icon generation utility for maintaining PWA icons
