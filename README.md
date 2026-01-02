@@ -1,6 +1,6 @@
 # Root Beer Review App
 
-A structured, data-driven web application for reviewing root beers. This app distinguishes between objective chemical/physical attributes, structured sensory dimensions, and subjective opinion, enabling meaningful comparison and visualization.
+A structured, data-driven web application for reviewing root beers. This app distinguishes between objective chemical/physical attributes, structured sensory dimensions, and subjective opinion, enabling meaningful comparison and visualization. For a recommendation on how to perform a tasting and create a review, please read the [Root Beer Tasting & Review Guide](RootBeerTastingGuide.md).
 
 ## Features
 
