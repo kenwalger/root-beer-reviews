@@ -124,6 +124,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Better error messages for S3 operations
   - Graceful fallback if S3 deletion fails
   - Improved URL parsing for different S3 regions
+  - More robust URL parsing fallback logic to handle edge cases (bucket names with ".s3." in them)
 
 ### Fixed
 - **Template Syntax**: Fixed missing `{% endblock %}` in public rootbeer template

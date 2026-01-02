@@ -13,6 +13,7 @@ A structured, data-driven web application for reviewing root beers. This app dis
 - **Progressive Web App (PWA)**: Installable on mobile and desktop with offline support
 - **Admin Navigation**: Seamless admin access from public pages when logged in
 - **Default Data Seeding**: Pre-populated flavor notes, colors, and serving contexts
+- **Image Uploads**: Upload multiple images per root beer with S3 storage, primary image selection, and automatic cleanup
 
 ## Tech Stack
 
@@ -92,6 +93,12 @@ RootBeerReviewApp/
    ADMIN_EMAIL=admin@example.com
    ADMIN_PASSWORD=change-this-password
    ENVIRONMENT=development
+   
+   # Optional: S3 Image Upload Configuration
+   AWS_ACCESS_KEY_ID=your-aws-access-key-id
+   AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+   AWS_REGION=us-east-1
+   S3_BUCKET_NAME=your-bucket-name
    ```
 
 4. **Run the application**:
@@ -207,7 +214,6 @@ See [ROADMAP.md](ROADMAP.md) for a detailed list of planned improvements and enh
 - Text search functionality
 - Pagination
 - Root beer comparison tool
-- Image uploads
 - Advanced filtering
 - Admin dashboard enhancements
 - Export functionality

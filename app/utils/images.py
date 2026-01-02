@@ -145,12 +145,18 @@ async def delete_image(image_url: str) -> bool:
             # us-east-1 format (no region in URL)
             key = image_url.split(f"{settings.s3_bucket_name}.s3.amazonaws.com/")[-1]
         else:
-            # Try to extract from any S3 URL format
-            parts = image_url.split('.s3.')
-            if len(parts) != 2:
-                logger.warning(f"Could not parse S3 URL format: {image_url}")
+            # Try to extract from any S3 URL format (fallback for edge cases)
+            # Handle various S3 URL formats: bucket.s3.region.amazonaws.com/key or bucket.s3.amazonaws.com/key
+            if '.s3.' in image_url and 'amazonaws.com' in image_url:
+                # Extract everything after .amazonaws.com/ (S3 URLs use subdomain format with dots)
+                if '.amazonaws.com/' in image_url:
+                    key = image_url.split('.amazonaws.com/')[-1]
+                else:
+                    logger.warning(f"Could not parse S3 URL format: {image_url}")
+                    return False
+            else:
+                logger.warning(f"URL does not appear to be a valid S3 URL: {image_url}")
                 return False
-            key = parts[1].split('.amazonaws.com/')[-1] if '.amazonaws.com/' in parts[1] else parts[1].split('/')[-1]
         
         # Delete from S3 (boto3 calls are synchronous, but we're in an async context)
         client.delete_object(
