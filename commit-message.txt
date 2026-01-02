@@ -1,22 +1,25 @@
-docs: Improve formatting and discoverability of tasting guide
+fix: Home page review display and copyright year rendering
 
-This commit improves the formatting and discoverability of the Root Beer
-Tasting & Review Guide in both the guide itself and the README.
+This commit fixes two critical bugs that were preventing proper display
+of content on the home page and footer.
 
-Formatting Improvements:
-- Added table of contents to RootBeerTastingGuide.md
-  - Links to all 12 sections for easy navigation
-  - Improves usability for quick reference
-- Removed redundant "End of Tasting & Review Guide" footer
-  - Cleaner document ending
+Bug Fixes:
+- Fixed home page not showing root beers with reviews
+  - Improved review query logic to handle both string and ObjectId formats
+  - Added fallback query strategies (try string first, then ObjectId)
+  - Added comprehensive error handling and debug logging
+  - Root beers with reviews now correctly appear on the homepage
+- Fixed copyright year displaying function object instead of actual year
+  - Changed template helper from function reference to lambda
+  - Ensures Jinja2 properly executes the function call
+  - Copyright now dynamically displays current year (e.g., "© 2025")
 
-Documentation Improvements:
-- Moved tasting guide link from intro paragraph to Usage section
-  - More discoverable placement in README
-  - Added "Getting Started: How to Review Root Beer" subsection
-  - Includes brief overview of what the guide covers
-  - Better context for when users need it
+Technical Details:
+- Updated app/routes/public.py: Enhanced review query with multiple
+  fallback strategies and debug logging
+- Updated app/templates_helpers.py: Changed current_year from function
+  reference to lambda for proper Jinja2 template execution
 
 Files Changed:
-- RootBeerTastingGuide.md: Added table of contents, removed footer
-- README.md: Moved guide link to Usage section with better context
+- app/routes/public.py: Improved review query logic and added logging
+- app/templates_helpers.py: Fixed copyright year template helper

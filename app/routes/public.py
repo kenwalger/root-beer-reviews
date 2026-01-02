@@ -6,6 +6,9 @@ from app.routes.auth import get_admin_optional
 from app.templates_helpers import templates
 from bson import ObjectId
 from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter()
@@ -37,8 +40,36 @@ async def homepage(request: Request):
     
     # Get review data for each root beer
     for rb in rootbeers:
-        rb["_id"] = str(rb["_id"])
-        reviews = await db.reviews.find({"root_beer_id": str(rb["_id"])}).to_list(100)
+        rootbeer_id_obj = rb["_id"]  # Keep original ObjectId
+        rootbeer_id_str = str(rootbeer_id_obj)
+        rb["_id"] = rootbeer_id_str
+        # Query for reviews - root_beer_id is stored as string in reviews
+        # Try both string and ObjectId formats to handle any inconsistencies
+        try:
+            # First try with string (most common case)
+            reviews = await db.reviews.find({"root_beer_id": rootbeer_id_str}).to_list(100)
+            # If no reviews found, try with ObjectId
+            if not reviews:
+                reviews = await db.reviews.find({"root_beer_id": rootbeer_id_obj}).to_list(100)
+                if reviews:
+                    logger.info(f"Found {len(reviews)} reviews using ObjectId for rootbeer {rootbeer_id_str}")
+        except Exception as e:
+            logger.error(f"Error querying reviews for rootbeer {rootbeer_id_str}: {e}")
+            # Fallback: try both in $or query
+            reviews = await db.reviews.find({
+                "$or": [
+                    {"root_beer_id": rootbeer_id_str},
+                    {"root_beer_id": rootbeer_id_obj}
+                ]
+            }).to_list(100)
+        
+        # Debug: log if we found reviews
+        if reviews:
+            logger.debug(f"Found {len(reviews)} reviews for rootbeer {rootbeer_id_str}")
+        else:
+            # Check if any reviews exist at all
+            total_reviews = await db.reviews.count_documents({})
+            logger.debug(f"No reviews found for rootbeer {rootbeer_id_str} (total reviews in DB: {total_reviews})")
         
         if reviews:
             # Calculate average scores
