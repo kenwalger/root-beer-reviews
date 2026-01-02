@@ -45,6 +45,28 @@ async def service_worker():
         headers={"Service-Worker-Allowed": "/"}
     )
 
+# Serve favicon at root level (browsers automatically request /favicon.ico)
+@app.get("/favicon.ico")
+async def favicon():
+    """Serve the favicon file."""
+    from fastapi.responses import FileResponse
+    import os
+    # Try multiple locations: root, then icons directory, then fall back to icon-192x192.png
+    favicon_paths = [
+        "favicon.ico",  # Root directory
+        os.path.join("app", "static", "icons", "favicon.ico"),  # Icons directory
+        os.path.join("app", "static", "icons", "icon-192x192.png"),  # Fallback
+    ]
+    for favicon_path in favicon_paths:
+        if os.path.exists(favicon_path):
+            return FileResponse(
+                favicon_path,
+                media_type="image/x-icon" if favicon_path.endswith(".ico") else "image/png"
+            )
+    # If nothing found, return 404
+    from fastapi import HTTPException
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
 # Include routers
 app.include_router(auth.router)
 app.include_router(admin.router)

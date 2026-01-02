@@ -112,7 +112,22 @@ This document outlines planned improvements and enhancements for the Root Beer R
 
 ## Lower Priority Features
 
-### 9. REST API Endpoints
+### 9. Production Tailwind CSS Setup
+**Status**: Not Started  
+**Complexity**: Low-Medium  
+**Estimated Effort**: 2-3 hours  
+**Description**: Replace Tailwind CDN with proper PostCSS/CLI setup for production.
+
+**Implementation Notes**:
+- Currently using Tailwind CDN (fine for MVP/development)
+- Set up Tailwind CSS with PostCSS plugin or CLI
+- Build CSS file during deployment
+- Remove CDN script tags from templates
+- Add build step to deployment process
+- Reduces bundle size and improves performance
+- Eliminates console warning about CDN usage
+
+### 10. REST API Endpoints
 **Status**: Not Started  
 **Complexity**: Medium  
 **Estimated Effort**: 6-8 hours  
@@ -124,7 +139,7 @@ This document outlines planned improvements and enhancements for the Root Beer R
 - Rate limiting
 - API documentation (OpenAPI/Swagger)
 
-### 10. Social Features
+### 11. Social Features
 **Status**: Not Started  
 **Complexity**: Low-Medium  
 **Estimated Effort**: 3-5 hours  
@@ -136,7 +151,7 @@ This document outlines planned improvements and enhancements for the Root Beer R
 - XML sitemap for SEO
 - Open Graph meta tags
 
-### 11. Bulk Operations
+### 12. Bulk Operations
 **Status**: Not Started  
 **Complexity**: Medium-High  
 **Estimated Effort**: 6-10 hours  
@@ -148,7 +163,7 @@ This document outlines planned improvements and enhancements for the Root Beer R
 - Bulk import from CSV
 - Bulk tag assignment
 
-### 12. Enhanced Error Pages
+### 13. Enhanced Error Pages
 **Status**: Not Started  
 **Complexity**: Low  
 **Estimated Effort**: 2-3 hours  
@@ -160,7 +175,7 @@ This document outlines planned improvements and enhancements for the Root Beer R
 - Better error messages
 - Helpful navigation from error pages
 
-### 13. Review Editing Improvements
+### 14. Review Editing Improvements
 **Status**: Partial  
 **Complexity**: Low-Medium  
 **Estimated Effort**: 2-4 hours  
@@ -172,7 +187,7 @@ This document outlines planned improvements and enhancements for the Root Beer R
 - Add review history/changelog
 - Better validation feedback
 
-### 14. Statistics and Analytics
+### 15. Statistics and Analytics
 **Status**: Not Started  
 **Complexity**: Medium-High  
 **Estimated Effort**: 8-12 hours  
@@ -185,7 +200,7 @@ This document outlines planned improvements and enhancements for the Root Beer R
 - Flavor note frequency analysis
 - Regional comparisons
 
-### 15. Mobile UX Improvements
+### 16. Mobile UX Improvements
 **Status**: Partial  
 **Complexity**: Low-Medium  
 **Estimated Effort**: 3-5 hours  
