@@ -1,36 +1,26 @@
-fix: Generate PWA icons and fix deprecated meta tags
+fix: Add favicon route and document Tailwind CDN usage
 
-This commit fixes PWA installation issues by generating all required icon
-sizes and updating deprecated meta tags.
+This commit adds a favicon route handler and documents the Tailwind CDN
+situation for future reference.
 
 Bug Fixes:
-- Generated all required PWA icon sizes (72x72 through 512x512)
-  - Resolved 404 errors for missing icons that prevented Chrome install prompt
-  - Icons now properly display in Chrome's address bar install option
-- Fixed deprecated meta tag warning
-  - Added mobile-web-app-capable meta tag (replaces deprecated apple-mobile-web-app-capable)
-  - Updated both public and admin base templates
+- Added /favicon.ico route to resolve 404 errors
+  - Browsers automatically request favicon.ico at root
+  - Route serves favicon.ico if exists, otherwise falls back to icon-192x192.png
+  - Eliminates console 404 error
 
 Added:
-- Icon generation script (generate_icons.py)
-  - Creates all required PWA icon sizes with root beer theme
-  - Uses Pillow for image generation
-  - Generates icons with root beer emoji on sassafras background
-  - Can be run with: uv run python generate_icons.py
+- TAILWIND_CDN_NOTE.md: Documentation explaining Tailwind CDN usage
+  - Explains current CDN setup is fine for MVP
+  - Notes it should be addressed for production optimization
+  - Provides context for the console warning
+
+Improved:
+- ROADMAP.md: Added "Production Tailwind CSS Setup" to lower priority features
+  - Documents future optimization task
+  - Includes implementation notes for PostCSS/CLI setup
 
 Files Changed:
-- app/templates/base.html: Added mobile-web-app-capable meta tag
-- app/templates/admin/base.html: Added mobile-web-app-capable meta tag
-- app/static/icons/: Generated all 8 required icon sizes
-- app/static/icons/site.webmanifest: Removed unused manifest file with incorrect placeholder content
-- generate_icons.py: New icon generation utility script with improved exception handling
-- CHANGELOG.md: Added version 0.2.3
-- ROADMAP.md: Marked PWA icons as completed
-- README.md: Updated PWA feature description
-
-Improvements:
-- Improved exception handling in icon generation script
-  - More explicit exception types (OSError, IOError)
-  - Cleaner font loading logic with proper fallback chain
-  - Removed nested try-except blocks for better readability
-
+- app/main.py: Added /favicon.ico route handler
+- TAILWIND_CDN_NOTE.md: New documentation file
+- ROADMAP.md: Added Tailwind production setup task
