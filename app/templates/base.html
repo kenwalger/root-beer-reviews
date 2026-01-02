@@ -115,36 +115,84 @@
         const installButton = document.getElementById('installButton');
         const installButtonMobile = document.getElementById('installButtonMobile');
         
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent Chrome from automatically showing the prompt
-            e.preventDefault();
-            // Stash the event so it can be triggered later
-            deferredPrompt = e;
-            // Show install buttons
-            if (installButton) installButton.classList.remove('hidden');
-            if (installButtonMobile) installButtonMobile.classList.remove('hidden');
-        });
+        // Check if app is already installed
+        function isInstalled() {
+            // Check if running in standalone mode (installed PWA)
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                return true;
+            }
+            // Check if navigator.standalone (iOS Safari)
+            if (window.navigator.standalone === true) {
+                return true;
+            }
+            return false;
+        }
+        
+        // Show install button if not already installed
+        if (!isInstalled()) {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent Chrome from automatically showing the prompt
+                e.preventDefault();
+                // Stash the event so it can be triggered later
+                deferredPrompt = e;
+                // Show install buttons
+                if (installButton) installButton.classList.remove('hidden');
+                if (installButtonMobile) installButtonMobile.classList.remove('hidden');
+                console.log('PWA install prompt available');
+            });
+            
+            // For iOS Safari and other browsers, show button after a delay
+            // (beforeinstallprompt doesn't fire on iOS)
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            if (isIOS) {
+                // On iOS, always show install button (uses manual instructions)
+                setTimeout(() => {
+                    if (installButton && installButton.classList.contains('hidden')) {
+                        installButton.classList.remove('hidden');
+                    }
+                    if (installButtonMobile && installButtonMobile.classList.contains('hidden')) {
+                        installButtonMobile.classList.remove('hidden');
+                    }
+                }, 1000);
+            }
+        } else {
+            // App is already installed, hide buttons
+            if (installButton) installButton.classList.add('hidden');
+            if (installButtonMobile) installButtonMobile.classList.add('hidden');
+        }
         
         // Handle install button clicks
         function handleInstallClick() {
-            if (!deferredPrompt) return;
-            
-            // Show the install prompt
-            deferredPrompt.prompt();
-            
-            // Wait for the user to respond to the prompt
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('User accepted the install prompt');
+            if (deferredPrompt) {
+                // Show the install prompt
+                deferredPrompt.prompt();
+                
+                // Wait for the user to respond to the prompt
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    // Clear the deferredPrompt
+                    deferredPrompt = null;
+                    // Hide install buttons
+                    if (installButton) installButton.classList.add('hidden');
+                    if (installButtonMobile) installButtonMobile.classList.add('hidden');
+                });
+            } else {
+                // Fallback: Show browser-specific instructions
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                const isAndroid = /Android/.test(navigator.userAgent);
+                
+                if (isIOS) {
+                    alert('To install: Tap the Share button (square with arrow), then "Add to Home Screen"');
+                } else if (isAndroid) {
+                    alert('To install: Tap the menu (⋮) and select "Install App" or "Add to Home Screen"');
                 } else {
-                    console.log('User dismissed the install prompt');
+                    alert('To install: Look for the install icon in your browser\'s address bar, or use the browser menu.');
                 }
-                // Clear the deferredPrompt
-                deferredPrompt = null;
-                // Hide install buttons
-                if (installButton) installButton.classList.add('hidden');
-                if (installButtonMobile) installButtonMobile.classList.add('hidden');
-            });
+            }
         }
         
         if (installButton) {

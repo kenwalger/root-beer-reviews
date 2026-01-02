@@ -20,6 +20,8 @@ class RootBeerBase(BaseModel):
     carbonation_level: Optional[str] = Field(None, max_length=20)  # "low", "medium", "high"
     estimated_co2_volumes: Optional[float] = Field(None, ge=0, le=10)  # Optional CO2 volumes
     notes: Optional[str] = None
+    images: Optional[List[str]] = Field(None, description="List of S3 image URLs")
+    primary_image: Optional[str] = Field(None, description="URL of primary/featured image")
 
 
 class RootBeerCreate(RootBeerBase):

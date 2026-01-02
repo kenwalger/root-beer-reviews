@@ -1,5 +1,5 @@
 """Admin routes for managing root beers, reviews, and metadata."""
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.database import get_database
 from app.models.rootbeer import RootBeerCreate, RootBeerUpdate
@@ -7,6 +7,7 @@ from app.models.review import ReviewCreate, ReviewUpdate
 from app.models.flavor_note import FlavorNoteCreate
 from app.routes.auth import require_admin
 from app.templates_helpers import templates
+from app.utils.images import upload_image, delete_image
 from bson import ObjectId
 from datetime import datetime
 from typing import List, Optional
@@ -95,6 +96,7 @@ async def create_rootbeer(
     carbonation_level: Optional[str] = Form(None),
     estimated_co2_volumes: Optional[float] = Form(None),
     notes: Optional[str] = Form(None),
+    files: Optional[List[UploadFile]] = File(None),
 ):
     """Create a new root beer."""
     db = get_database()
@@ -114,17 +116,48 @@ async def create_rootbeer(
         "carbonation_level": carbonation_level,
         "estimated_co2_volumes": float(estimated_co2_volumes) if estimated_co2_volumes else None,
         "notes": notes,
+        "images": [],  # Always initialize images as empty list
         "created_at": now,
         "updated_at": now,
         "created_by": admin["email"],
         "updated_by": admin["email"],
     }
     
-    # Remove None values
-    rootbeer_dict = {k: v for k, v in rootbeer_dict.items() if v is not None}
+    # Remove None values (but keep images even if empty)
+    rootbeer_dict = {k: v for k, v in rootbeer_dict.items() if v is not None or k == "images"}
     
     result = await db.rootbeers.insert_one(rootbeer_dict)
-    return RedirectResponse(url=f"/admin/rootbeers/{result.inserted_id}", status_code=303)
+    rootbeer_id = str(result.inserted_id)
+    
+    # Handle image uploads if provided
+    if files:
+        images = []
+        primary_image = None
+        for file in files:
+            if file.filename:  # Only process files that were actually uploaded
+                try:
+                    image_url = await upload_image(file, rootbeer_id)
+                    images.append(image_url)
+                    if not primary_image:
+                        primary_image = image_url
+                except HTTPException:
+                    # If upload fails, continue with other files
+                    pass
+        
+        if images:
+            await db.rootbeers.update_one(
+                {"_id": result.inserted_id},
+                {
+                    "$set": {
+                        "images": images,
+                        "primary_image": primary_image,
+                        "updated_at": now,
+                        "updated_by": admin["email"],
+                    }
+                }
+            )
+    
+    return RedirectResponse(url=f"/admin/rootbeers/{rootbeer_id}", status_code=303)
 
 
 @router.get("/admin/rootbeers/{rootbeer_id}", response_class=HTMLResponse)
@@ -140,6 +173,12 @@ async def view_rootbeer(
         raise HTTPException(status_code=404, detail="Root beer not found")
     
     rootbeer["_id"] = str(rootbeer["_id"])
+    
+    # Ensure images field exists and is a list (default to empty list if not present or None)
+    if "images" not in rootbeer or rootbeer.get("images") is None:
+        rootbeer["images"] = []
+    elif not isinstance(rootbeer.get("images"), list):
+        rootbeer["images"] = []
     
     # Get reviews
     reviews = await db.reviews.find({"root_beer_id": rootbeer_id}).to_list(100)
@@ -208,6 +247,124 @@ async def delete_rootbeer(
         raise HTTPException(status_code=404, detail="Root beer not found")
     
     return RedirectResponse(url="/admin/rootbeers", status_code=303)
+
+
+@router.post("/admin/rootbeers/{rootbeer_id}/images")
+async def upload_rootbeer_image(
+    rootbeer_id: str,
+    file: UploadFile = File(...),
+    admin: dict = Depends(require_admin)
+):
+    """Upload an image for a root beer."""
+    db = get_database()
+    
+    # Verify root beer exists
+    rootbeer = await db.rootbeers.find_one({"_id": ObjectId(rootbeer_id)})
+    if not rootbeer:
+        raise HTTPException(status_code=404, detail="Root beer not found")
+    
+    # Upload image
+    image_url = await upload_image(file, rootbeer_id)
+    
+    # Update root beer with new image
+    images = rootbeer.get("images") or []
+    if not isinstance(images, list):
+        images = []
+    images.append(image_url)
+    
+    # Set as primary if it's the first image
+    primary_image = rootbeer.get("primary_image") or image_url
+    
+    await db.rootbeers.update_one(
+        {"_id": ObjectId(rootbeer_id)},
+        {
+            "$set": {
+                "images": images,
+                "primary_image": primary_image,
+                "updated_at": datetime.utcnow(),
+                "updated_by": admin["email"],
+            }
+        }
+    )
+    
+    return RedirectResponse(url=f"/admin/rootbeers/{rootbeer_id}", status_code=303)
+
+
+@router.post("/admin/rootbeers/{rootbeer_id}/images/delete")
+async def delete_rootbeer_image(
+    rootbeer_id: str,
+    image_url: str = Form(...),
+    admin: dict = Depends(require_admin)
+):
+    """Delete an image from a root beer."""
+    db = get_database()
+    
+    rootbeer = await db.rootbeers.find_one({"_id": ObjectId(rootbeer_id)})
+    if not rootbeer:
+        raise HTTPException(status_code=404, detail="Root beer not found")
+    
+    images = rootbeer.get("images", [])
+    if image_url not in images:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    # Delete from S3 (continue even if deletion fails to avoid orphaned DB references)
+    s3_deleted = await delete_image(image_url)
+    if not s3_deleted:
+        # Log warning but continue with DB update
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to delete image from S3, but continuing with database update: {image_url}")
+    
+    # Remove from database
+    images.remove(image_url)
+    primary_image = rootbeer.get("primary_image")
+    if primary_image == image_url:
+        primary_image = images[0] if images else None
+    
+    await db.rootbeers.update_one(
+        {"_id": ObjectId(rootbeer_id)},
+        {
+            "$set": {
+                "images": images,
+                "primary_image": primary_image,
+                "updated_at": datetime.utcnow(),
+                "updated_by": admin["email"],
+            }
+        }
+    )
+    
+    return RedirectResponse(url=f"/admin/rootbeers/{rootbeer_id}", status_code=303)
+
+
+@router.post("/admin/rootbeers/{rootbeer_id}/images/set-primary")
+async def set_primary_image(
+    rootbeer_id: str,
+    image_url: str = Form(...),
+    admin: dict = Depends(require_admin)
+):
+    """Set the primary/featured image for a root beer."""
+    db = get_database()
+    
+    rootbeer = await db.rootbeers.find_one({"_id": ObjectId(rootbeer_id)})
+    if not rootbeer:
+        raise HTTPException(status_code=404, detail="Root beer not found")
+    
+    images = rootbeer.get("images", [])
+    if image_url not in images:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    await db.rootbeers.update_one(
+        {"_id": ObjectId(rootbeer_id)},
+        {
+            "$set": {
+                "primary_image": image_url,
+                "updated_at": datetime.utcnow(),
+                "updated_by": admin["email"],
+            }
+        }
+    )
+    
+    return RedirectResponse(url=f"/admin/rootbeers/{rootbeer_id}", status_code=303)
 
 
 # Review Management

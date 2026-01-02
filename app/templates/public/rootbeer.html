@@ -10,6 +10,38 @@
     {% endif %}
 </div>
 
+<!-- Images Section -->
+{% if (rootbeer.images and rootbeer.images|length > 0) or rootbeer.primary_image %}
+<div class="bg-white p-6 rounded-lg shadow mb-8">
+    <h2 class="text-2xl font-semibold text-sassafras mb-4">Images</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% if rootbeer.primary_image %}
+        <div class="col-span-1 md:col-span-3">
+            <img src="{{ rootbeer.primary_image }}" alt="{{ rootbeer.name }}" 
+                 class="w-full h-64 md:h-96 object-contain rounded">
+        </div>
+        {% elif rootbeer.images and rootbeer.images|length > 0 %}
+        {# If no primary_image but images exist, show first image as primary #}
+        <div class="col-span-1 md:col-span-3">
+            <img src="{{ rootbeer.images[0] }}" alt="{{ rootbeer.name }}" 
+                 class="w-full h-64 md:h-96 object-contain rounded">
+        </div>
+        {% endif %}
+        {% if rootbeer.images and rootbeer.images|length > 0 %}
+        {% for image_url in rootbeer.images %}
+        {% if image_url != rootbeer.primary_image %}
+        <div>
+            <img src="{{ image_url }}" alt="{{ rootbeer.name }}" 
+                 class="w-full h-32 object-cover rounded cursor-pointer hover:opacity-75 transition"
+                 onclick="window.open('{{ image_url }}', '_blank')">
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
     <!-- Objective Facts -->
     <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow">
@@ -164,9 +196,10 @@
     <p class="text-gray-500">No reviews yet.</p>
     {% endif %}
 </div>
+{% endblock %}
 
-{% if avg_scores %}
 {% block extra_scripts %}
+{% if avg_scores %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
     const ctx = document.getElementById('radarChart');
@@ -209,7 +242,6 @@
         }
     });
 </script>
-{% endblock %}
 {% endif %}
 {% endblock %}
 

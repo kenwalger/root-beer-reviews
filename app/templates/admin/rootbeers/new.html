@@ -5,7 +5,7 @@
     <h1 class="text-3xl font-bold text-sassafras">Add New Root Beer</h1>
 </div>
 
-<form method="POST" action="/admin/rootbeers" class="bg-white p-6 rounded-lg shadow space-y-6">
+<form method="POST" action="/admin/rootbeers" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow space-y-6">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
             <label for="name" class="block text-sm font-medium mb-2">Name *</label>
@@ -83,10 +83,38 @@
         <textarea id="notes" name="notes" rows="3" class="form-textarea"></textarea>
     </div>
     
+    <!-- Image Upload Section -->
+    <div class="border-t pt-6">
+        <label class="block text-sm font-medium mb-2">Images (Optional)</label>
+        <p class="text-sm text-gray-500 mb-4">You can add images now or after creating the root beer.</p>
+        <div id="imageUploads" class="space-y-4">
+            <div class="flex items-center space-x-4">
+                <input type="file" name="files" accept="image/*" 
+                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-caramel file:text-vanilla hover:file:bg-deep-brown">
+                <button type="button" onclick="addImageInput()" class="btn-secondary text-sm">Add Another</button>
+            </div>
+        </div>
+        <p class="text-sm text-gray-500 mt-2">Accepted formats: JPG, PNG, GIF, WebP. Max size: 5MB per image</p>
+    </div>
+    
     <div class="flex space-x-4">
         <button type="submit" class="btn-primary">Create Root Beer</button>
         <a href="/admin/rootbeers" class="btn-secondary">Cancel</a>
     </div>
 </form>
+
+<script>
+function addImageInput() {
+    const container = document.getElementById('imageUploads');
+    const newInput = document.createElement('div');
+    newInput.className = 'flex items-center space-x-4';
+    newInput.innerHTML = `
+        <input type="file" name="files" accept="image/*" 
+               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-caramel file:text-vanilla hover:file:bg-deep-brown">
+        <button type="button" onclick="this.parentElement.remove()" class="btn-secondary text-sm">Remove</button>
+    `;
+    container.appendChild(newInput);
+}
+</script>
 {% endblock %}
 

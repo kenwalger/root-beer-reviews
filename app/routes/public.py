@@ -101,6 +101,16 @@ async def view_rootbeer_public(rootbeer_id: str, request: Request):
     
     rootbeer["_id"] = str(rootbeer["_id"])
     
+    # Ensure images field exists and is a list (default to empty list if not present or None)
+    if "images" not in rootbeer or rootbeer.get("images") is None:
+        rootbeer["images"] = []
+    elif not isinstance(rootbeer.get("images"), list):
+        rootbeer["images"] = []
+    
+    # Ensure primary_image is set if images exist but primary_image is not set
+    if rootbeer.get("images") and len(rootbeer["images"]) > 0 and not rootbeer.get("primary_image"):
+        rootbeer["primary_image"] = rootbeer["images"][0]
+    
     # Get all reviews
     reviews = await db.reviews.find({"root_beer_id": rootbeer_id}).sort("review_date", -1).to_list(100)
     
