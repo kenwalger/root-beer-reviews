@@ -4,6 +4,21 @@ This guide defines a **repeatable, consistent process** for tasting and reviewin
 
 The goal is not to eliminate subjectivity, but to **control variables** and **separate observation from opinion**.
 
+## Table of Contents
+
+1. [Preparation (Before Opening)](#1-preparation-before-opening)
+2. [Glassware & Pouring](#2-glassware--pouring)
+3. [Visual Assessment](#3-visual-assessment-record-before-tasting)
+4. [Aroma Assessment](#4-aroma-assessment)
+5. [First Sip (Structure Pass)](#5-first-sip-structure-pass)
+6. [Second Sip (Flavor Pass)](#6-second-sip-flavor-pass)
+7. [Finish & Aftertaste](#7-finish--aftertaste)
+8. [Overall Evaluation (Opinion Pass)](#8-overall-evaluation-opinion-pass)
+9. [Carbonation-Specific Guidance](#9-carbonation-specific-guidance)
+10. [Consistency Rules](#10-consistency-rules)
+11. [Recording Notes in the App](#11-recording-notes-in-the-app)
+12. [Philosophy](#12-philosophy)
+
 ---
 
 ## 1. Preparation (Before Opening)
@@ -192,7 +207,3 @@ This system prioritizes:
 * Transparency over false objectivity
 
 Taste is subjective. Structure creates meaning.
-
----
-
-**End of Tasting & Review Guide**

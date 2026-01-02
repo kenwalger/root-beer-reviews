@@ -181,6 +181,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Improved
+- **Documentation**: Enhanced formatting and discoverability
+  - Added table of contents to Root Beer Tasting & Review Guide
+  - Moved tasting guide link to prominent "Getting Started" section in README
+  - Improved navigation and readability of documentation
+
 ### Planned
 - Public commenting system
 - Multi-user authentication
