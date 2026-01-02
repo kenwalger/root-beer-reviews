@@ -41,17 +41,22 @@ This document outlines planned improvements and enhancements for the Root Beer R
 - Compare up to 3-5 root beers at once
 
 ### 4. Image Uploads
-**Status**: Not Started  
+**Status**: ✅ Completed  
 **Complexity**: High  
-**Estimated Effort**: 10-16 hours  
+**Estimated Effort**: 6-10 hours (S3) or 8-12 hours (Cloudinary)  
 **Description**: Allow admins to upload photos of root beer bottles/cans.
 
 **Implementation Notes**:
-- Add image upload field to root beer creation/edit forms
-- Store images (local filesystem or cloud storage like S3)
-- Display images on root beer detail pages
-- Support multiple images per root beer
-- Image optimization and thumbnails
+- ✅ **Storage**: Implemented AWS S3 integration
+- ✅ Add image upload field to root beer creation/edit forms
+- ✅ Store image URLs in MongoDB (not files themselves)
+- ✅ Display images on root beer detail pages with gallery view
+- ✅ Support multiple images per root beer with primary image selection
+- ✅ File validation (type, size) on server
+- ✅ Automatic S3 deletion when images are removed
+- ⏳ **S3**: Image optimization with Pillow (future enhancement)
+- ⏳ **S3**: Optional CloudFront CDN (future enhancement)
+- See [S3_SETUP.md](S3_SETUP.md) for setup instructions
 
 ## Medium Priority Features
 
@@ -209,6 +214,10 @@ This document outlines planned improvements and enhancements for the Root Beer R
 - ✅ Dynamic copyright year
 - ✅ Responsive mobile navigation (hamburger menu)
 - ✅ PWA install button
+- ✅ S3 image uploads with multiple images per root beer
+- ✅ Image gallery display in admin and public views
+- ✅ Primary image selection
+- ✅ Automatic S3 deletion when images are removed
 
 ## Future Considerations
 

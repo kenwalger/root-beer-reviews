@@ -102,6 +102,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Apple-specific meta tags for iOS home screen installation
 - Service worker registration in both public and admin templates
 
+## [0.2.2] - 2025-12-30
+
+### Added
+- **S3 Image Upload Support**: Full image upload functionality using AWS S3
+  - Upload images during root beer creation or after
+  - Support for multiple images per root beer
+  - Primary image selection
+  - Image gallery display in admin and public views
+  - Automatic S3 deletion when images are removed from the app
+  - Support for JPG, PNG, GIF, and WebP formats
+  - 5MB file size limit per image
+  - S3 setup guide (S3_SETUP.md) with troubleshooting steps
+
+### Improved
+- **Image Handling**: Robust image field initialization and validation
+  - Images field always initialized as empty list
+  - Proper handling of None values and missing fields
+  - Automatic primary image assignment if not set
+- **Error Handling**: Enhanced S3 error handling with proper logging
+  - Better error messages for S3 operations
+  - Graceful fallback if S3 deletion fails
+  - Improved URL parsing for different S3 regions
+
+### Fixed
+- **Template Syntax**: Fixed missing `{% endblock %}` in public rootbeer template
+  - Resolved Internal Server Error when viewing root beer pages
+- **Image Display**: Fixed image display in public root beer view
+  - Images now properly show in public pages
+  - Improved template conditions for image rendering
+  - Fallback to show first image as primary if primary_image not set
+- **S3 Configuration**: Fixed S3 ACL compatibility issues
+  - Removed ACL parameter (not supported in newer S3 buckets)
+  - Updated to use bucket policy for public access
+  - Fixed URL format for us-east-1 region (no region in URL)
+- **Image Deletion**: Improved S3 deletion with proper error handling
+  - Images are deleted from S3 when removed from the app
+  - Better logging for deletion failures
+  - Continues with database update even if S3 deletion fails
+
+### Technical
+- Added `boto3` dependency for S3 operations
+- S3 client initialization with proper error handling
+- Image URL construction for different AWS regions
+- Proper async/await pattern for S3 operations
+
 ## [Unreleased]
 
 ### Planned

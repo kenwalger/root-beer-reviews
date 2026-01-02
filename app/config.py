@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     admin_email: Optional[str] = None
     admin_password: Optional[str] = None
     
+    # AWS S3 Configuration (for image uploads)
+    aws_access_key_id: Optional[str] = None
+    aws_secret_access_key: Optional[str] = None
+    aws_region: str = "us-east-1"
+    s3_bucket_name: Optional[str] = None
+    
     # Environment
     environment: str = "development"
     
