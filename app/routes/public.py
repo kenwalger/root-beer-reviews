@@ -44,24 +44,13 @@ async def homepage(request: Request):
         rootbeer_id_str = str(rootbeer_id_obj)
         rb["_id"] = rootbeer_id_str
         # Query for reviews - root_beer_id is stored as string in reviews
-        # Try both string and ObjectId formats to handle any inconsistencies
-        try:
-            # First try with string (most common case)
-            reviews = await db.reviews.find({"root_beer_id": rootbeer_id_str}).to_list(100)
-            # If no reviews found, try with ObjectId
-            if not reviews:
-                reviews = await db.reviews.find({"root_beer_id": rootbeer_id_obj}).to_list(100)
-                if reviews:
-                    logger.info(f"Found {len(reviews)} reviews using ObjectId for rootbeer {rootbeer_id_str}")
-        except Exception as e:
-            logger.error(f"Error querying reviews for rootbeer {rootbeer_id_str}: {e}")
-            # Fallback: try both in $or query
-            reviews = await db.reviews.find({
-                "$or": [
-                    {"root_beer_id": rootbeer_id_str},
-                    {"root_beer_id": rootbeer_id_obj}
-                ]
-            }).to_list(100)
+        # Use $or to handle both string and ObjectId formats in a single query
+        reviews = await db.reviews.find({
+            "$or": [
+                {"root_beer_id": rootbeer_id_str},
+                {"root_beer_id": rootbeer_id_obj}
+            ]
+        }).to_list(100)
         
         # Debug: log if we found reviews
         if reviews:

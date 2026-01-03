@@ -183,8 +183,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Home Page**: Root beers with reviews now display correctly on homepage
-  - Improved review query logic to handle both string and ObjectId formats for `root_beer_id`
-  - Added fallback query strategies and error handling
+  - Fixed review query to handle both string and ObjectId formats for `root_beer_id` using `$or` query
+  - Simplified query logic to use single efficient query instead of multiple fallback attempts
   - Added debug logging to help diagnose query issues
 - **Copyright Year**: Fixed copyright year displaying function object instead of actual year
   - Changed template helper from function reference to lambda for proper Jinja2 execution
