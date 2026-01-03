@@ -29,7 +29,16 @@ async def homepage(request: Request):
     sort_by = request.query_params.get("sort", "name")  # name, brand, score
     sort_order = request.query_params.get("order", "asc")  # asc, desc
     
-    # Build query
+    # Get all root beers once for filter dropdowns (independent filters - show all options)
+    all_rootbeers_for_filters = await db.rootbeers.find().to_list(1000)
+    brands = sorted(set(rb.get("brand", "") for rb in all_rootbeers_for_filters if rb.get("brand")))
+    regions = sorted(set(
+        rb.get("region", "") or rb.get("country", "")
+        for rb in all_rootbeers_for_filters
+        if rb.get("region") or rb.get("country")
+    ))
+    
+    # Build query for filtered results
     query = {}
     if brand_filter:
         query["brand"] = {"$regex": brand_filter, "$options": "i"}
@@ -39,16 +48,8 @@ async def homepage(request: Request):
             {"country": {"$regex": region_filter, "$options": "i"}},
         ]
     
-    # Get all root beers matching query (for counting and processing)
+    # Get filtered root beers matching query (for counting and processing)
     all_rootbeers = await db.rootbeers.find(query).to_list(1000)
-    
-    # Get unique brands and regions for filters (reuse all_rootbeers data)
-    brands = sorted(set(rb.get("brand", "") for rb in all_rootbeers if rb.get("brand")))
-    regions = sorted(set(
-        rb.get("region", "") or rb.get("country", "")
-        for rb in all_rootbeers
-        if rb.get("region") or rb.get("country")
-    ))
     
     # Get review data for each root beer
     for rb in all_rootbeers:

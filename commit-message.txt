@@ -1,24 +1,31 @@
 Performance optimizations and code quality improvements
 
-This PR addresses performance issues and code quality concerns identified in the previous PR review.
+This PR addresses performance issues and code quality concerns identified in the previous PR review, while maintaining independent filter behavior.
 
 Key Changes:
 - **Performance Optimization**: Eliminated redundant database query in homepage route
-  - Reuse `all_rootbeers` data for filter dropdowns instead of fetching again
-  - Moved brands/regions extraction before review processing loop
-  - Reduces database round-trips and improves page load time
+  - Fetch all root beers once for filter dropdowns (unfiltered, for independent filters)
+  - Apply filter query separately for results
+  - Maintains independent filter behavior: filters show all options regardless of current selections
+  - Addresses PR feedback concern about cascading filters by fetching unfiltered data for dropdowns
+  - Reduces database round-trips compared to previous two-query implementation
 - **Code Quality**: Fixed formatting and removed duplication
   - Fixed indentation inconsistency in template response formatting
   - Removed duplicate JavaScript function in pagination template
   - Consolidated pagination template logic to eliminate code duplication
   - JavaScript function now defined once outside conditional blocks
 
+PR Review Response:
+- Addressed concern about filter behavior change (cascading vs independent)
+- Filters now remain independent: all brands/regions shown regardless of current selections
+- Performance optimization maintained while preserving original UX
+
 Performance Impact:
-- Eliminates one unnecessary database query per homepage load
-- Reduces database load and improves response time
+- Optimizes database queries while preserving UX
+- Filters remain independent (no cascading behavior)
 - No functional changes, purely performance and code quality improvements
 
 Files Changed:
-- `app/routes/public.py`: Optimized to reuse existing data for filters
+- `app/routes/public.py`: Optimized to fetch once for filters (unfiltered), separately for results
 - `app/templates/partials/pagination.html`: Removed duplicate JavaScript code
 

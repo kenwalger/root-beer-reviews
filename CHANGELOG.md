@@ -195,9 +195,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Copyright now correctly displays current year dynamically
 
 ### Improved
-- **Performance**: Optimized homepage route to eliminate redundant database query
-  - Reuse `all_rootbeers` data for filter dropdowns instead of fetching again
-  - Reduces database round-trips and improves page load time
+- **Performance**: Optimized homepage route to eliminate redundant database query (proposed, not yet merged)
+  - Fetch all root beers once for filter dropdowns (unfiltered, for independent filters)
+  - Apply filter query separately for results
+  - Maintains independent filter behavior: filters show all options regardless of current selections
+  - Addresses PR review feedback: preserves original UX (independent filters) while optimizing performance
+  - Reduces database round-trips compared to previous two-query implementation
 - **Code Quality**: Cleaned up debug logging statements and fixed formatting
   - Removed excessive print statements from homepage route
   - Removed debug logging from admin routes
