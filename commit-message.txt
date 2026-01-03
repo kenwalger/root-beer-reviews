@@ -1,25 +1,26 @@
-fix: Home page review display and copyright year rendering
+fix: Simplify review query logic and fix copyright year
 
-This commit fixes two critical bugs that were preventing proper display
-of content on the home page and footer.
+This commit fixes the review query logic based on PR feedback and
+maintains the copyright year fix.
 
 Bug Fixes:
-- Fixed home page not showing root beers with reviews
-  - Improved review query logic to handle both string and ObjectId formats
-  - Added fallback query strategies (try string first, then ObjectId)
-  - Added comprehensive error handling and debug logging
-  - Root beers with reviews now correctly appear on the homepage
+- Fixed home page review query logic
+  - Simplified to use single $or query instead of flawed try-except fallback
+  - Empty query results don't raise exceptions, so exception handling was unnecessary
+  - Now uses efficient single query that handles both string and ObjectId formats
+  - Removed redundant fallback logic that would never execute
 - Fixed copyright year displaying function object instead of actual year
   - Changed template helper from function reference to lambda
   - Ensures Jinja2 properly executes the function call
   - Copyright now dynamically displays current year (e.g., "© 2025")
 
 Technical Details:
-- Updated app/routes/public.py: Enhanced review query with multiple
-  fallback strategies and debug logging
+- Updated app/routes/public.py: Simplified review query to use $or directly
+  - Removed unnecessary try-except block and nested if statements
+  - Single query handles both string and ObjectId formats efficiently
 - Updated app/templates_helpers.py: Changed current_year from function
   reference to lambda for proper Jinja2 template execution
 
 Files Changed:
-- app/routes/public.py: Improved review query logic and added logging
+- app/routes/public.py: Simplified review query logic
 - app/templates_helpers.py: Fixed copyright year template helper
