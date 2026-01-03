@@ -195,14 +195,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Copyright now correctly displays current year dynamically
 
 ### Improved
+- **Performance**: Optimized homepage route to eliminate redundant database query
+  - Reuse `all_rootbeers` data for filter dropdowns instead of fetching again
+  - Reduces database round-trips and improves page load time
+- **Code Quality**: Cleaned up debug logging statements and fixed formatting
+  - Removed excessive print statements from homepage route
+  - Removed debug logging from admin routes
+  - Maintained proper INFO-level logging for production use
+  - Fixed indentation inconsistency in template response formatting
+  - Removed duplicate JavaScript code in pagination template
 - **Documentation**: Enhanced formatting and discoverability
   - Added table of contents to Root Beer Tasting & Review Guide
   - Moved tasting guide link to prominent "Getting Started" section in README
   - Improved navigation and readability of documentation
-- **Code Quality**: Cleaned up debug logging statements
-  - Removed excessive print statements from homepage route
-  - Removed debug logging from admin routes
-  - Maintained proper INFO-level logging for production use
 
 ### Planned
 - Public commenting system

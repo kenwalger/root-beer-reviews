@@ -42,6 +42,14 @@ async def homepage(request: Request):
     # Get all root beers matching query (for counting and processing)
     all_rootbeers = await db.rootbeers.find(query).to_list(1000)
     
+    # Get unique brands and regions for filters (reuse all_rootbeers data)
+    brands = sorted(set(rb.get("brand", "") for rb in all_rootbeers if rb.get("brand")))
+    regions = sorted(set(
+        rb.get("region", "") or rb.get("country", "")
+        for rb in all_rootbeers
+        if rb.get("region") or rb.get("country")
+    ))
+    
     # Get review data for each root beer
     for rb in all_rootbeers:
         rootbeer_id_obj = rb["_id"]  # Keep original ObjectId
@@ -88,15 +96,6 @@ async def homepage(request: Request):
     end_idx = start_idx + pagination["limit"]
     rootbeers = rootbeers_with_reviews[start_idx:end_idx]
     
-    # Get unique brands and regions for filters
-    all_rootbeers_for_filters = await db.rootbeers.find().to_list(1000)
-    brands = sorted(set(rb.get("brand", "") for rb in all_rootbeers_for_filters if rb.get("brand")))
-    regions = sorted(set(
-        rb.get("region", "") or rb.get("country", "")
-        for rb in all_rootbeers_for_filters
-        if rb.get("region") or rb.get("country")
-    ))
-    
     # Build query params for pagination URLs
     query_params = {
         "brand": brand_filter or "",
@@ -111,21 +110,21 @@ async def homepage(request: Request):
     
     return templates.TemplateResponse(
         "public/home.html",
-            {
-                "request": request,
-                "rootbeers": rootbeers,
-                "brands": brands,
-                "regions": regions,
-                "current_brand": brand_filter,
-                "current_region": region_filter,
-                "sort_by": sort_by,
-                "sort_order": sort_order,
-                "admin": admin,
-                "pagination": pagination_info,
-                "query_params": query_params,
-                "build_pagination_url": build_pagination_url,
-            }
-        )
+        {
+            "request": request,
+            "rootbeers": rootbeers,
+            "brands": brands,
+            "regions": regions,
+            "current_brand": brand_filter,
+            "current_region": region_filter,
+            "sort_by": sort_by,
+            "sort_order": sort_order,
+            "admin": admin,
+            "pagination": pagination_info,
+            "query_params": query_params,
+            "build_pagination_url": build_pagination_url,
+        }
+    )
 
 
 @router.get("/rootbeers/{rootbeer_id}", response_class=HTMLResponse)

@@ -1,25 +1,24 @@
-Fix homepage review display and service worker caching strategy
+Performance optimizations and code quality improvements
 
-This PR fixes a critical issue where the homepage was not displaying root beers with reviews due to service worker caching. The service worker was using a cache-first strategy that prevented the FastAPI route from executing, so reviews never appeared.
+This PR addresses performance issues and code quality concerns identified in the previous PR review.
 
 Key Changes:
-- Changed service worker to use network-first strategy for homepage
-  - Homepage now always fetches fresh data from server first
-  - Service worker still caches response for offline use
-  - Ensures reviews display correctly on every visit
-- Removed homepage from initial cache list
-- Bumped service worker cache version to v2 to clear old cached data
-- Cleaned up excessive debug logging statements
-- Fixed indentation issues in homepage route
+- **Performance Optimization**: Eliminated redundant database query in homepage route
+  - Reuse `all_rootbeers` data for filter dropdowns instead of fetching again
+  - Moved brands/regions extraction before review processing loop
+  - Reduces database round-trips and improves page load time
+- **Code Quality**: Fixed formatting and removed duplication
+  - Fixed indentation inconsistency in template response formatting
+  - Removed duplicate JavaScript function in pagination template
+  - Consolidated pagination template logic to eliminate code duplication
+  - JavaScript function now defined once outside conditional blocks
 
-The fix ensures that:
-- Homepage route is always executed (visible in server logs)
-- Reviews display correctly when they exist in the database
-- Service worker still provides offline functionality
-- Fresh data is always shown to users
+Performance Impact:
+- Eliminates one unnecessary database query per homepage load
+- Reduces database load and improves response time
+- No functional changes, purely performance and code quality improvements
 
-Also updated ROADMAP.md to:
-- Mark pagination as completed
-- Add test suite as a high-priority feature
-- Update completed features list
+Files Changed:
+- `app/routes/public.py`: Optimized to reuse existing data for filters
+- `app/templates/partials/pagination.html`: Removed duplicate JavaScript code
 

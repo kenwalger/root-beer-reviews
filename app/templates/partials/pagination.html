@@ -84,83 +84,35 @@
     </nav>
     {% endif %}
 </div>
-
-<script>
-function buildPaginationUrlAndNavigate(queryParams, page, perPage) {
-    const params = new URLSearchParams();
-    
-    // Add existing query params
-    for (const [key, value] of Object.entries(queryParams || {})) {
-        if (value && value !== '') {
-            params.append(key, value);
-        }
-    }
-    
-    // Override page if provided, otherwise reset to page 1 when changing per_page
-    if (page !== null) {
-        params.set('page', page);
-    } else if (perPage !== null) {
-        // When changing per_page, reset to page 1
-        params.set('page', '1');
-    } else if (!params.has('page')) {
-        params.set('page', '1');
-    }
-    
-    // Override per_page if provided
-    if (perPage !== null) {
-        params.set('per_page', perPage);
-    }
-    
-    window.location.href = window.location.pathname + '?' + params.toString();
-}
-</script>
-{% elif pagination and pagination.total_items > 0 %}
-<!-- Show per-page selector even if only one page -->
-<div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-    <div class="flex items-center gap-2">
-        <label for="per_page" class="text-sm text-gray-600">Items per page:</label>
-        <select id="per_page" name="per_page" 
-                onchange="buildPaginationUrlAndNavigate({{ query_params|tojson|safe }}, null, this.value)"
-                class="form-select text-sm">
-            {% for option in [10, 20, 50, 100] %}
-            <option value="{{ option }}" {% if pagination.per_page == option %}selected{% endif %}>{{ option }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    
-    <div class="text-sm text-gray-600">
-        Showing {{ pagination.start_item }} to {{ pagination.end_item }} of {{ pagination.total_items }} items
-    </div>
-</div>
-
-<script>
-function buildPaginationUrlAndNavigate(queryParams, page, perPage) {
-    const params = new URLSearchParams();
-    
-    // Add existing query params
-    for (const [key, value] of Object.entries(queryParams || {})) {
-        if (value && value !== '') {
-            params.append(key, value);
-        }
-    }
-    
-    // Override page if provided, otherwise reset to page 1 when changing per_page
-    if (page !== null) {
-        params.set('page', page);
-    } else if (perPage !== null) {
-        // When changing per_page, reset to page 1
-        params.set('page', '1');
-    } else if (!params.has('page')) {
-        params.set('page', '1');
-    }
-    
-    // Override per_page if provided
-    if (perPage !== null) {
-        params.set('per_page', perPage);
-    }
-    
-    window.location.href = window.location.pathname + '?' + params.toString();
-}
-</script>
 {% endif %}
+
+<script>
+function buildPaginationUrlAndNavigate(queryParams, page, perPage) {
+    const params = new URLSearchParams();
+    
+    // Add existing query params
+    for (const [key, value] of Object.entries(queryParams || {})) {
+        if (value && value !== '') {
+            params.append(key, value);
+        }
+    }
+    
+    // Override page if provided, otherwise reset to page 1 when changing per_page
+    if (page !== null) {
+        params.set('page', page);
+    } else if (perPage !== null) {
+        // When changing per_page, reset to page 1
+        params.set('page', '1');
+    } else if (!params.has('page')) {
+        params.set('page', '1');
+    }
+    
+    // Override per_page if provided
+    if (perPage !== null) {
+        params.set('per_page', perPage);
+    }
+    
+    window.location.href = window.location.pathname + '?' + params.toString();
+}
+</script>
 
