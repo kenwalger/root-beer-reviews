@@ -1,18 +1,22 @@
-"""Pagination utilities for list views."""
+"""Pagination utilities for list views.
+
+This module provides functions for extracting pagination parameters from
+requests and calculating pagination metadata for display.
+"""
 from typing import Dict, Any, Optional
 from math import ceil
+from fastapi import Request
 
 
-def get_pagination_params(request, default_per_page: int = 20) -> Dict[str, Any]:
-    """
-    Extract pagination parameters from request query params.
+def get_pagination_params(request: Request, default_per_page: int = 20) -> Dict[str, Any]:
+    """Extract pagination parameters from request query params.
     
-    Args:
-        request: FastAPI Request object
-        default_per_page: Default items per page
-        
-    Returns:
-        Dictionary with page, per_page, skip, and limit values
+    :param request: FastAPI request object
+    :type request: Request
+    :param default_per_page: Default items per page
+    :type default_per_page: int
+    :returns: Dictionary with page, per_page, skip, limit, and allowed_per_page
+    :rtype: Dict[str, Any]
     """
     try:
         page = int(request.query_params.get("page", 1))
@@ -43,16 +47,16 @@ def get_pagination_params(request, default_per_page: int = 20) -> Dict[str, Any]
 
 
 def calculate_pagination_info(total_items: int, page: int, per_page: int) -> Dict[str, Any]:
-    """
-    Calculate pagination information.
+    """Calculate pagination information.
     
-    Args:
-        total_items: Total number of items
-        page: Current page number
-        per_page: Items per page
-        
-    Returns:
-        Dictionary with pagination info (total_pages, has_prev, has_next, etc.)
+    :param total_items: Total number of items
+    :type total_items: int
+    :param page: Current page number
+    :type page: int
+    :param per_page: Items per page
+    :type per_page: int
+    :returns: Dictionary with pagination info (total_pages, has_prev, has_next, etc.)
+    :rtype: Dict[str, Any]
     """
     total_pages = ceil(total_items / per_page) if total_items > 0 else 1
     if total_pages < 1:
@@ -95,18 +99,24 @@ def calculate_pagination_info(total_items: int, page: int, per_page: int) -> Dic
     }
 
 
-def build_pagination_url(base_url: str, params: Dict[str, Any], page: Optional[int] = None, per_page: Optional[int] = None) -> str:
-    """
-    Build a URL with pagination parameters while preserving existing query params.
+def build_pagination_url(
+    base_url: str, 
+    params: Dict[str, Any], 
+    page: Optional[int] = None, 
+    per_page: Optional[int] = None
+) -> str:
+    """Build a URL with pagination parameters while preserving existing query params.
     
-    Args:
-        base_url: Base URL path
-        params: Existing query parameters
-        page: Page number (if None, uses existing page param)
-        per_page: Items per page (if None, uses existing per_page param)
-        
-    Returns:
-        URL string with query parameters
+    :param base_url: Base URL path
+    :type base_url: str
+    :param params: Existing query parameters
+    :type params: Dict[str, Any]
+    :param page: Page number (if None, uses existing page param)
+    :type page: Optional[int]
+    :param per_page: Items per page (if None, uses existing per_page param)
+    :type per_page: Optional[int]
+    :returns: URL string with query parameters
+    :rtype: str
     """
     query_params = params.copy()
     

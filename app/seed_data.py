@@ -1,10 +1,21 @@
-"""Seed default data from planning documents."""
+"""Seed default data from planning documents.
+
+This module provides functionality to seed the database with default
+flavor notes, colors, and serving contexts from the planning documents.
+The seeding is idempotent - it only inserts data if collections are empty.
+"""
 from datetime import datetime
 from app.database import get_database
 
 
-async def seed_default_data():
-    """Seed default flavor notes, colors, and serving contexts."""
+async def seed_default_data() -> None:
+    """Seed default flavor notes, colors, and serving contexts.
+    
+    Populates the database with initial data if collections are empty.
+    This function is idempotent and safe to call multiple times.
+    
+    :raises Exception: If database operations fail
+    """
     db = get_database()
     now = datetime.utcnow()
     

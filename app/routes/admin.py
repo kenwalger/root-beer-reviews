@@ -1,4 +1,9 @@
-"""Admin routes for managing root beers, reviews, and metadata."""
+"""Admin routes for managing root beers, reviews, and metadata.
+
+This module provides all admin-only routes for CRUD operations on
+root beers, reviews, flavor notes, and metadata. All routes require
+admin authentication via the require_admin dependency.
+"""
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.database import get_database
@@ -11,15 +16,28 @@ from app.utils.images import upload_image, delete_image
 from app.utils.pagination import get_pagination_params, calculate_pagination_info, build_pagination_url
 from bson import ObjectId
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 
 router = APIRouter()
 
 
 @router.get("/admin", response_class=HTMLResponse)
-async def admin_dashboard(request: Request, admin: dict = Depends(require_admin)):
-    """Admin dashboard."""
+async def admin_dashboard(
+    request: Request, 
+    admin: dict[str, str] = Depends(require_admin)
+) -> HTMLResponse:
+    """Display admin dashboard.
+    
+    Shows overview statistics and recent reviews.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: HTML response with dashboard
+    :rtype: HTMLResponse
+    """
     db = get_database()
     
     # Get counts
@@ -51,8 +69,19 @@ async def admin_dashboard(request: Request, admin: dict = Depends(require_admin)
 
 # Root Beer Management
 @router.get("/admin/rootbeers", response_class=HTMLResponse)
-async def list_rootbeers(request: Request, admin: dict = Depends(require_admin)):
-    """List all root beers."""
+async def list_rootbeers(
+    request: Request, 
+    admin: dict[str, str] = Depends(require_admin)
+) -> HTMLResponse:
+    """List all root beers with pagination.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: HTML response with paginated root beers list
+    :rtype: HTMLResponse
+    """
     db = get_database()
     
     # Get pagination parameters
@@ -92,8 +121,19 @@ async def list_rootbeers(request: Request, admin: dict = Depends(require_admin))
 
 
 @router.get("/admin/rootbeers/new", response_class=HTMLResponse)
-async def new_rootbeer_form(request: Request, admin: dict = Depends(require_admin)):
-    """Show form to create a new root beer."""
+async def new_rootbeer_form(
+    request: Request, 
+    admin: dict[str, str] = Depends(require_admin)
+) -> HTMLResponse:
+    """Show form to create a new root beer.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: HTML response with root beer creation form
+    :rtype: HTMLResponse
+    """
     db = get_database()
     colors = await db.colors.find().sort("name", 1).to_list(100)
     for color in colors:
@@ -108,7 +148,7 @@ async def new_rootbeer_form(request: Request, admin: dict = Depends(require_admi
 @router.post("/admin/rootbeers")
 async def create_rootbeer(
     request: Request,
-    admin: dict = Depends(require_admin),
+    admin: dict[str, str] = Depends(require_admin),
     name: str = Form(...),
     brand: str = Form(...),
     region: Optional[str] = Form(None),
@@ -123,8 +163,47 @@ async def create_rootbeer(
     estimated_co2_volumes: Optional[float] = Form(None),
     notes: Optional[str] = Form(None),
     files: Optional[List[UploadFile]] = File(None),
-):
-    """Create a new root beer."""
+) -> RedirectResponse:
+    """Create a new root beer.
+    
+    Creates a new root beer entry and optionally uploads images to S3.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :param name: Root beer name
+    :type name: str
+    :param brand: Brand name
+    :type brand: str
+    :param region: Region (optional)
+    :type region: Optional[str]
+    :param country: Country (optional)
+    :type country: Optional[str]
+    :param ingredients: Ingredients list (optional)
+    :type ingredients: Optional[str]
+    :param sweetener_type: Type of sweetener (optional)
+    :type sweetener_type: Optional[str]
+    :param sugar_grams_per_serving: Sugar content in grams (optional)
+    :type sugar_grams_per_serving: Optional[float]
+    :param caffeine_mg: Caffeine content in mg (optional)
+    :type caffeine_mg: Optional[float]
+    :param alcohol_content: Alcohol content percentage (optional)
+    :type alcohol_content: Optional[float]
+    :param color: Color (optional)
+    :type color: Optional[str]
+    :param carbonation_level: Carbonation level (optional)
+    :type carbonation_level: Optional[str]
+    :param estimated_co2_volumes: Estimated CO2 volumes (optional)
+    :type estimated_co2_volumes: Optional[float]
+    :param notes: Additional notes (optional)
+    :type notes: Optional[str]
+    :param files: Image files to upload (optional)
+    :type files: Optional[List[UploadFile]]
+    :returns: Redirect to root beer detail page
+    :rtype: RedirectResponse
+    :raises HTTPException: If image upload fails
+    """
     db = get_database()
     now = datetime.utcnow()
     
@@ -190,9 +269,20 @@ async def create_rootbeer(
 async def view_rootbeer(
     rootbeer_id: str,
     request: Request,
-    admin: dict = Depends(require_admin)
-):
-    """View a root beer."""
+    admin: dict[str, str] = Depends(require_admin)
+) -> HTMLResponse:
+    """View a root beer detail page.
+    
+    :param rootbeer_id: Root beer ID
+    :type rootbeer_id: str
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: HTML response with root beer details
+    :rtype: HTMLResponse
+    :raises HTTPException: If root beer not found
+    """
     db = get_database()
     rootbeer = await db.rootbeers.find_one({"_id": ObjectId(rootbeer_id)})
     if not rootbeer:
@@ -232,9 +322,22 @@ async def update_rootbeer(
     rootbeer_id: str,
     rootbeer: RootBeerUpdate,
     request: Request,
-    admin: dict = Depends(require_admin)
-):
-    """Update a root beer."""
+    admin: dict[str, str] = Depends(require_admin)
+) -> RedirectResponse:
+    """Update a root beer.
+    
+    :param rootbeer_id: Root beer ID
+    :type rootbeer_id: str
+    :param rootbeer: Root beer update data
+    :type rootbeer: RootBeerUpdate
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: Redirect to root beer detail page
+    :rtype: RedirectResponse
+    :raises HTTPException: If root beer not found
+    """
     db = get_database()
     update_data = rootbeer.model_dump(exclude_unset=True)
     update_data["updated_at"] = datetime.utcnow()
@@ -255,9 +358,22 @@ async def update_rootbeer(
 async def delete_rootbeer(
     rootbeer_id: str,
     request: Request,
-    admin: dict = Depends(require_admin)
-):
-    """Delete a root beer."""
+    admin: dict[str, str] = Depends(require_admin)
+) -> RedirectResponse:
+    """Delete a root beer.
+    
+    Cannot delete root beers that have reviews. Reviews must be deleted first.
+    
+    :param rootbeer_id: Root beer ID
+    :type rootbeer_id: str
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: Redirect to root beers list
+    :rtype: RedirectResponse
+    :raises HTTPException: If root beer not found or has reviews
+    """
     db = get_database()
     
     # Check if there are reviews
@@ -279,9 +395,20 @@ async def delete_rootbeer(
 async def upload_rootbeer_image(
     rootbeer_id: str,
     file: UploadFile = File(...),
-    admin: dict = Depends(require_admin)
-):
-    """Upload an image for a root beer."""
+    admin: dict[str, str] = Depends(require_admin)
+) -> RedirectResponse:
+    """Upload an image for a root beer.
+    
+    :param rootbeer_id: Root beer ID
+    :type rootbeer_id: str
+    :param file: Image file to upload
+    :type file: UploadFile
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: Redirect to root beer detail page
+    :rtype: RedirectResponse
+    :raises HTTPException: If root beer not found or upload fails
+    """
     db = get_database()
     
     # Verify root beer exists
@@ -320,9 +447,23 @@ async def upload_rootbeer_image(
 async def delete_rootbeer_image(
     rootbeer_id: str,
     image_url: str = Form(...),
-    admin: dict = Depends(require_admin)
-):
-    """Delete an image from a root beer."""
+    admin: dict[str, str] = Depends(require_admin)
+) -> RedirectResponse:
+    """Delete an image from a root beer.
+    
+    Attempts to delete from both S3 and database. Continues with database
+    update even if S3 deletion fails to avoid orphaned references.
+    
+    :param rootbeer_id: Root beer ID
+    :type rootbeer_id: str
+    :param image_url: URL of image to delete
+    :type image_url: str
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: Redirect to root beer detail page
+    :rtype: RedirectResponse
+    :raises HTTPException: If root beer or image not found
+    """
     db = get_database()
     
     rootbeer = await db.rootbeers.find_one({"_id": ObjectId(rootbeer_id)})
@@ -366,9 +507,20 @@ async def delete_rootbeer_image(
 async def set_primary_image(
     rootbeer_id: str,
     image_url: str = Form(...),
-    admin: dict = Depends(require_admin)
-):
-    """Set the primary/featured image for a root beer."""
+    admin: dict[str, str] = Depends(require_admin)
+) -> RedirectResponse:
+    """Set the primary/featured image for a root beer.
+    
+    :param rootbeer_id: Root beer ID
+    :type rootbeer_id: str
+    :param image_url: URL of image to set as primary
+    :type image_url: str
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: Redirect to root beer detail page
+    :rtype: RedirectResponse
+    :raises HTTPException: If root beer or image not found
+    """
     db = get_database()
     
     rootbeer = await db.rootbeers.find_one({"_id": ObjectId(rootbeer_id)})
@@ -395,8 +547,19 @@ async def set_primary_image(
 
 # Review Management
 @router.get("/admin/reviews", response_class=HTMLResponse)
-async def list_reviews(request: Request, admin: dict = Depends(require_admin)):
-    """List all reviews."""
+async def list_reviews(
+    request: Request, 
+    admin: dict[str, str] = Depends(require_admin)
+) -> HTMLResponse:
+    """List all reviews with pagination.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: HTML response with paginated reviews list
+    :rtype: HTMLResponse
+    """
     db = get_database()
     
     # Get pagination parameters
@@ -439,8 +602,19 @@ async def list_reviews(request: Request, admin: dict = Depends(require_admin)):
 
 
 @router.get("/admin/reviews/new", response_class=HTMLResponse)
-async def new_review_form(request: Request, admin: dict = Depends(require_admin)):
-    """Show form to create a new review."""
+async def new_review_form(
+    request: Request, 
+    admin: dict[str, str] = Depends(require_admin)
+) -> HTMLResponse:
+    """Show form to create a new review.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: HTML response with review creation form
+    :rtype: HTMLResponse
+    """
     db = get_database()
     rootbeers = await db.rootbeers.find().sort("name", 1).to_list(1000)
     for rb in rootbeers:
@@ -469,7 +643,7 @@ async def new_review_form(request: Request, admin: dict = Depends(require_admin)
 @router.post("/admin/reviews")
 async def create_review(
     request: Request,
-    admin: dict = Depends(require_admin),
+    admin: dict[str, str] = Depends(require_admin),
     root_beer_id: str = Form(...),
     review_date: str = Form(...),
     serving_context: Optional[str] = Form(None),
@@ -483,8 +657,43 @@ async def create_review(
     would_drink_again: bool = Form(False),
     tasting_notes: Optional[str] = Form(None),
     flavor_notes: List[str] = Form(default_factory=list),
-):
-    """Create a new review."""
+) -> RedirectResponse:
+    """Create a new review.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :param root_beer_id: Root beer ID
+    :type root_beer_id: str
+    :param review_date: Review date in ISO format
+    :type review_date: str
+    :param serving_context: Serving context (optional)
+    :type serving_context: Optional[str]
+    :param sweetness: Sweetness rating (1-5)
+    :type sweetness: int
+    :param carbonation_bite: Carbonation bite rating (1-5)
+    :type carbonation_bite: int
+    :param creaminess: Creaminess rating (1-5)
+    :type creaminess: int
+    :param acidity: Acidity rating (1-5)
+    :type acidity: int
+    :param aftertaste_length: Aftertaste length rating (1-5)
+    :type aftertaste_length: int
+    :param overall_score: Overall score (1-10)
+    :type overall_score: int
+    :param uniqueness_score: Uniqueness score (1-10, optional)
+    :type uniqueness_score: Optional[int]
+    :param would_drink_again: Would drink again flag
+    :type would_drink_again: bool
+    :param tasting_notes: Tasting notes (optional)
+    :type tasting_notes: Optional[str]
+    :param flavor_notes: List of flavor note IDs
+    :type flavor_notes: List[str]
+    :returns: Redirect to review detail page
+    :rtype: RedirectResponse
+    :raises HTTPException: If root beer not found
+    """
     db = get_database()
     
     # Verify root beer exists
@@ -530,9 +739,20 @@ async def create_review(
 async def view_review(
     review_id: str,
     request: Request,
-    admin: dict = Depends(require_admin)
-):
-    """View a review."""
+    admin: dict[str, str] = Depends(require_admin)
+) -> HTMLResponse:
+    """View a review detail page.
+    
+    :param review_id: Review ID
+    :type review_id: str
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: HTML response with review details
+    :rtype: HTMLResponse
+    :raises HTTPException: If review not found
+    """
     db = get_database()
     review = await db.reviews.find_one({"_id": ObjectId(review_id)})
     if not review:
@@ -587,7 +807,7 @@ async def view_review(
 async def update_review(
     review_id: str,
     request: Request,
-    admin: dict = Depends(require_admin),
+    admin: dict[str, str] = Depends(require_admin),
     root_beer_id: Optional[str] = Form(None),
     review_date: Optional[str] = Form(None),
     serving_context: Optional[str] = Form(None),
@@ -601,8 +821,45 @@ async def update_review(
     would_drink_again: Optional[bool] = Form(None),
     tasting_notes: Optional[str] = Form(None),
     flavor_notes: List[str] = Form(default_factory=list),
-):
-    """Update a review."""
+) -> RedirectResponse:
+    """Update a review.
+    
+    :param review_id: Review ID
+    :type review_id: str
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :param root_beer_id: Root beer ID (optional)
+    :type root_beer_id: Optional[str]
+    :param review_date: Review date in ISO format (optional)
+    :type review_date: Optional[str]
+    :param serving_context: Serving context (optional)
+    :type serving_context: Optional[str]
+    :param sweetness: Sweetness rating (1-5, optional)
+    :type sweetness: Optional[int]
+    :param carbonation_bite: Carbonation bite rating (1-5, optional)
+    :type carbonation_bite: Optional[int]
+    :param creaminess: Creaminess rating (1-5, optional)
+    :type creaminess: Optional[int]
+    :param acidity: Acidity rating (1-5, optional)
+    :type acidity: Optional[int]
+    :param aftertaste_length: Aftertaste length rating (1-5, optional)
+    :type aftertaste_length: Optional[int]
+    :param overall_score: Overall score (1-10, optional)
+    :type overall_score: Optional[int]
+    :param uniqueness_score: Uniqueness score (1-10, optional)
+    :type uniqueness_score: Optional[int]
+    :param would_drink_again: Would drink again flag (optional)
+    :type would_drink_again: Optional[bool]
+    :param tasting_notes: Tasting notes (optional)
+    :type tasting_notes: Optional[str]
+    :param flavor_notes: List of flavor note IDs (optional)
+    :type flavor_notes: List[str]
+    :returns: Redirect to review detail page
+    :rtype: RedirectResponse
+    :raises HTTPException: If review not found
+    """
     db = get_database()
     update_data = {}
     
@@ -654,9 +911,20 @@ async def update_review(
 async def delete_review(
     review_id: str,
     request: Request,
-    admin: dict = Depends(require_admin)
-):
-    """Delete a review."""
+    admin: dict[str, str] = Depends(require_admin)
+) -> RedirectResponse:
+    """Delete a review.
+    
+    :param review_id: Review ID
+    :type review_id: str
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: Redirect to reviews list
+    :rtype: RedirectResponse
+    :raises HTTPException: If review not found
+    """
     db = get_database()
     result = await db.reviews.delete_one({"_id": ObjectId(review_id)})
     if result.deleted_count == 0:
@@ -667,8 +935,19 @@ async def delete_review(
 
 # Flavor Note Management
 @router.get("/admin/flavor-notes", response_class=HTMLResponse)
-async def list_flavor_notes(request: Request, admin: dict = Depends(require_admin)):
-    """List all flavor notes."""
+async def list_flavor_notes(
+    request: Request, 
+    admin: dict[str, str] = Depends(require_admin)
+) -> HTMLResponse:
+    """List all flavor notes.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: HTML response with flavor notes list
+    :rtype: HTMLResponse
+    """
     db = get_database()
     flavor_notes = await db.flavor_notes.find().sort("name", 1).to_list(1000)
     for fn in flavor_notes:
@@ -683,11 +962,23 @@ async def list_flavor_notes(request: Request, admin: dict = Depends(require_admi
 @router.post("/admin/flavor-notes")
 async def create_flavor_note(
     request: Request,
-    admin: dict = Depends(require_admin),
+    admin: dict[str, str] = Depends(require_admin),
     name: str = Form(...),
     category: Optional[str] = Form(None),
-):
-    """Create a new flavor note."""
+) -> RedirectResponse:
+    """Create a new flavor note.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :param name: Flavor note name
+    :type name: str
+    :param category: Flavor note category (optional)
+    :type category: Optional[str]
+    :returns: Redirect to flavor notes list
+    :rtype: RedirectResponse
+    """
     db = get_database()
     now = datetime.utcnow()
     
@@ -711,9 +1002,20 @@ async def create_flavor_note(
 async def delete_flavor_note(
     flavor_note_id: str,
     request: Request,
-    admin: dict = Depends(require_admin)
-):
-    """Delete a flavor note."""
+    admin: dict[str, str] = Depends(require_admin)
+) -> RedirectResponse:
+    """Delete a flavor note.
+    
+    :param flavor_note_id: Flavor note ID
+    :type flavor_note_id: str
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: Redirect to flavor notes list
+    :rtype: RedirectResponse
+    :raises HTTPException: If flavor note not found
+    """
     db = get_database()
     result = await db.flavor_notes.delete_one({"_id": ObjectId(flavor_note_id)})
     if result.deleted_count == 0:
@@ -724,8 +1026,19 @@ async def delete_flavor_note(
 
 # Metadata Management (Colors, Serving Contexts)
 @router.get("/admin/metadata", response_class=HTMLResponse)
-async def metadata_management(request: Request, admin: dict = Depends(require_admin)):
-    """Manage metadata (colors, serving contexts)."""
+async def metadata_management(
+    request: Request, 
+    admin: dict[str, str] = Depends(require_admin)
+) -> HTMLResponse:
+    """Manage metadata (colors, serving contexts).
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: HTML response with metadata management page
+    :rtype: HTMLResponse
+    """
     db = get_database()
     colors = await db.colors.find().sort("name", 1).to_list(100)
     for color in colors:
@@ -750,9 +1063,19 @@ async def metadata_management(request: Request, admin: dict = Depends(require_ad
 async def create_color(
     name: str,
     request: Request,
-    admin: dict = Depends(require_admin)
-):
-    """Create a new color option."""
+    admin: dict[str, str] = Depends(require_admin)
+) -> RedirectResponse:
+    """Create a new color option.
+    
+    :param name: Color name
+    :type name: str
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: Redirect to metadata management page
+    :rtype: RedirectResponse
+    """
     db = get_database()
     now = datetime.utcnow()
     
@@ -772,9 +1095,20 @@ async def create_color(
 async def delete_color(
     color_id: str,
     request: Request,
-    admin: dict = Depends(require_admin)
-):
-    """Delete a color option."""
+    admin: dict[str, str] = Depends(require_admin)
+) -> RedirectResponse:
+    """Delete a color option.
+    
+    :param color_id: Color ID
+    :type color_id: str
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: Redirect to metadata management page
+    :rtype: RedirectResponse
+    :raises HTTPException: If color not found
+    """
     db = get_database()
     result = await db.colors.delete_one({"_id": ObjectId(color_id)})
     if result.deleted_count == 0:
@@ -787,9 +1121,19 @@ async def delete_color(
 async def create_serving_context(
     name: str,
     request: Request,
-    admin: dict = Depends(require_admin)
-):
-    """Create a new serving context option."""
+    admin: dict[str, str] = Depends(require_admin)
+) -> RedirectResponse:
+    """Create a new serving context option.
+    
+    :param name: Serving context name
+    :type name: str
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: Redirect to metadata management page
+    :rtype: RedirectResponse
+    """
     db = get_database()
     now = datetime.utcnow()
     
@@ -809,9 +1153,20 @@ async def create_serving_context(
 async def delete_serving_context(
     sc_id: str,
     request: Request,
-    admin: dict = Depends(require_admin)
-):
-    """Delete a serving context option."""
+    admin: dict[str, str] = Depends(require_admin)
+) -> RedirectResponse:
+    """Delete a serving context option.
+    
+    :param sc_id: Serving context ID
+    :type sc_id: str
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: Redirect to metadata management page
+    :rtype: RedirectResponse
+    :raises HTTPException: If serving context not found
+    """
     db = get_database()
     result = await db.serving_contexts.delete_one({"_id": ObjectId(sc_id)})
     if result.deleted_count == 0:
@@ -822,8 +1177,19 @@ async def delete_serving_context(
 
 # Admin Account Management
 @router.get("/admin/account", response_class=HTMLResponse)
-async def admin_account(request: Request, admin: dict = Depends(require_admin)):
-    """Admin account settings page."""
+async def admin_account(
+    request: Request, 
+    admin: dict[str, str] = Depends(require_admin)
+) -> HTMLResponse:
+    """Admin account settings page.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :returns: HTML response with account settings page
+    :rtype: HTMLResponse
+    """
     db = get_database()
     user = await db.admin_users.find_one({"email": admin["email"]})
     if user:
@@ -842,12 +1208,27 @@ async def admin_account(request: Request, admin: dict = Depends(require_admin)):
 @router.post("/admin/account/change-password")
 async def change_password(
     request: Request,
-    admin: dict = Depends(require_admin),
+    admin: dict[str, str] = Depends(require_admin),
     current_password: str = Form(...),
     new_password: str = Form(...),
     confirm_password: str = Form(...),
-):
-    """Change admin password."""
+) -> RedirectResponse | HTMLResponse:
+    """Change admin password.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :param admin: Authenticated admin user information
+    :type admin: dict[str, str]
+    :param current_password: Current password
+    :type current_password: str
+    :param new_password: New password
+    :type new_password: str
+    :param confirm_password: Password confirmation
+    :type confirm_password: str
+    :returns: Redirect to account page on success, account page with error on failure
+    :rtype: RedirectResponse | HTMLResponse
+    :raises HTTPException: If current password is incorrect or passwords don't match
+    """
     from app.auth import verify_password, get_password_hash, get_admin_user_by_email
     
     # Verify current password

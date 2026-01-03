@@ -1,4 +1,8 @@
-"""Image upload utilities for AWS S3."""
+"""Image upload utilities for AWS S3.
+
+This module provides functions for uploading and deleting images to/from
+AWS S3, with validation for file types and sizes.
+"""
 import boto3
 from botocore.exceptions import ClientError
 from fastapi import UploadFile, HTTPException
@@ -8,7 +12,7 @@ from datetime import datetime
 from typing import Optional
 
 # Initialize S3 client (only if credentials are provided)
-s3_client = None
+s3_client: Optional[boto3.client] = None
 if settings.aws_access_key_id and settings.aws_secret_access_key:
     s3_client = boto3.client(
         's3',
@@ -17,11 +21,16 @@ if settings.aws_access_key_id and settings.aws_secret_access_key:
         region_name=settings.aws_region,
     )
 
-ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}  #: Allowed image file extensions
+MAX_FILE_SIZE = 5 * 1024 * 1024  #: Maximum file size in bytes (5MB)
 
-def _get_s3_client():
-    """Get S3 client, raising error if not configured."""
+def _get_s3_client() -> boto3.client:
+    """Get S3 client, raising error if not configured.
+    
+    :returns: Configured boto3 S3 client
+    :rtype: boto3.client
+    :raises HTTPException: If S3 is not configured
+    """
     if not s3_client:
         raise HTTPException(
             status_code=500,
@@ -35,18 +44,15 @@ def _get_s3_client():
     return s3_client
 
 async def upload_image(file: UploadFile, rootbeer_id: str) -> str:
-    """
-    Upload an image to S3.
+    """Upload an image to S3.
     
-    Args:
-        file: FastAPI UploadFile object
-        rootbeer_id: ID of the root beer (for organization)
-        
-    Returns:
-        Public URL of uploaded image
-        
-    Raises:
-        HTTPException if upload fails or file is invalid
+    :param file: FastAPI UploadFile object
+    :type file: UploadFile
+    :param rootbeer_id: ID of the root beer (for organization)
+    :type rootbeer_id: str
+    :returns: Public URL of uploaded image
+    :rtype: str
+    :raises HTTPException: If upload fails or file is invalid
     """
     client = _get_s3_client()
     
@@ -112,16 +118,14 @@ async def upload_image(file: UploadFile, rootbeer_id: str) -> str:
         raise HTTPException(status_code=500, detail=f"S3 upload failed: {str(e)}")
 
 async def delete_image(image_url: str) -> bool:
-    """
-    Delete an image from S3.
+    """Delete an image from S3.
     
-    Args:
-        image_url: Full URL of the image to delete
-        
-    Returns:
-        True if successful, False otherwise
-        
-    Note:
+    :param image_url: Full URL of the image to delete
+    :type image_url: str
+    :returns: True if successful, False otherwise
+    :rtype: bool
+    
+    .. note::
         This function will attempt to delete from S3. If deletion fails,
         it returns False but does not raise an exception, allowing the
         database update to proceed (to avoid orphaned references).

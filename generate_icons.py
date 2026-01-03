@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""
-Simple script to generate placeholder PWA icons.
+"""Simple script to generate placeholder PWA icons.
+
 Creates basic colored square icons with a root beer emoji.
 
 Usage:
@@ -10,6 +10,8 @@ Usage:
 Or if Pillow is installed in your system Python:
     python3 generate_icons.py
 """
+from typing import List
+import os
 
 try:
     from PIL import Image, ImageDraw, ImageFont
@@ -18,17 +20,21 @@ except ImportError:
     print("Then run with: uv run python generate_icons.py")
     exit(1)
 
-import os
-
 # Icon sizes needed
-SIZES = [72, 96, 128, 144, 152, 192, 384, 512]
+SIZES: List[int] = [72, 96, 128, 144, 152, 192, 384, 512]
 
 # Colors from the app theme
-BACKGROUND_COLOR = (92, 64, 51)  # #5C4033 (sassafras)
-TEXT_COLOR = (255, 248, 220)  # #FFF8DC (vanilla)
+BACKGROUND_COLOR: tuple[int, int, int] = (92, 64, 51)  #: Sassafras color (#5C4033)
+TEXT_COLOR: tuple[int, int, int] = (255, 248, 220)  #: Vanilla color (#FFF8DC)
 
-def create_icon(size):
-    """Create a simple icon with root beer emoji."""
+def create_icon(size: int) -> Image.Image:
+    """Create a simple icon with root beer emoji.
+    
+    :param size: Icon size in pixels (width and height)
+    :type size: int
+    :returns: PIL Image object with the icon
+    :rtype: Image.Image
+    """
     # Create image with background color
     img = Image.new('RGB', (size, size), BACKGROUND_COLOR)
     draw = ImageDraw.Draw(img)
@@ -66,8 +72,11 @@ def create_icon(size):
     
     return img
 
-def main():
-    """Generate all required icon sizes."""
+def main() -> None:
+    """Generate all required icon sizes.
+    
+    Creates all PWA icon sizes in the app/static/icons directory.
+    """
     icons_dir = "app/static/icons"
     os.makedirs(icons_dir, exist_ok=True)
     
