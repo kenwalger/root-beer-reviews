@@ -8,6 +8,7 @@ from app.models.flavor_note import FlavorNoteCreate
 from app.routes.auth import require_admin
 from app.templates_helpers import templates
 from app.utils.images import upload_image, delete_image
+from app.utils.pagination import get_pagination_params, calculate_pagination_info, build_pagination_url
 from bson import ObjectId
 from datetime import datetime
 from typing import List, Optional
@@ -53,15 +54,40 @@ async def admin_dashboard(request: Request, admin: dict = Depends(require_admin)
 async def list_rootbeers(request: Request, admin: dict = Depends(require_admin)):
     """List all root beers."""
     db = get_database()
-    rootbeers = await db.rootbeers.find().sort("name", 1).to_list(1000)
+    
+    # Get pagination parameters
+    pagination = get_pagination_params(request, default_per_page=20)
+    
+    # Get total count
+    total_items = await db.rootbeers.count_documents({})
+    
+    # Get paginated root beers
+    rootbeers_cursor = db.rootbeers.find().sort("name", 1).skip(pagination["skip"]).limit(pagination["limit"])
+    rootbeers = await rootbeers_cursor.to_list(pagination["limit"])
+    
     for rb in rootbeers:
         rb["_id"] = str(rb["_id"])
         # Count reviews
         rb["review_count"] = await db.reviews.count_documents({"root_beer_id": str(rb["_id"])})
     
+    # Calculate pagination info
+    pagination_info = calculate_pagination_info(total_items, pagination["page"], pagination["per_page"])
+    
+    # Build query params for pagination URLs
+    query_params = {
+        "per_page": pagination["per_page"],
+    }
+    
     return templates.TemplateResponse(
         "admin/rootbeers/list.html",
-        {"request": request, "admin": admin, "rootbeers": rootbeers}
+        {
+            "request": request,
+            "admin": admin,
+            "rootbeers": rootbeers,
+            "pagination": pagination_info,
+            "query_params": query_params,
+            "build_pagination_url": build_pagination_url,
+        }
     )
 
 
@@ -372,7 +398,16 @@ async def set_primary_image(
 async def list_reviews(request: Request, admin: dict = Depends(require_admin)):
     """List all reviews."""
     db = get_database()
-    reviews = await db.reviews.find().sort("review_date", -1).to_list(1000)
+    
+    # Get pagination parameters
+    pagination = get_pagination_params(request, default_per_page=20)
+    
+    # Get total count
+    total_items = await db.reviews.count_documents({})
+    
+    # Get paginated reviews
+    reviews_cursor = db.reviews.find().sort("review_date", -1).skip(pagination["skip"]).limit(pagination["limit"])
+    reviews = await reviews_cursor.to_list(pagination["limit"])
     
     # Get root beer names
     for review in reviews:
@@ -382,9 +417,24 @@ async def list_reviews(request: Request, admin: dict = Depends(require_admin)):
             if rootbeer:
                 review["rootbeer_name"] = rootbeer.get("name", "Unknown")
     
+    # Calculate pagination info
+    pagination_info = calculate_pagination_info(total_items, pagination["page"], pagination["per_page"])
+    
+    # Build query params for pagination URLs
+    query_params = {
+        "per_page": pagination["per_page"],
+    }
+    
     return templates.TemplateResponse(
         "admin/reviews/list.html",
-        {"request": request, "admin": admin, "reviews": reviews}
+        {
+            "request": request,
+            "admin": admin,
+            "reviews": reviews,
+            "pagination": pagination_info,
+            "query_params": query_params,
+            "build_pagination_url": build_pagination_url,
+        }
     )
 
 
