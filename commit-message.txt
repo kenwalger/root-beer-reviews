@@ -1,26 +1,25 @@
-fix: Simplify review query logic and fix copyright year
+Fix homepage review display and service worker caching strategy
 
-This commit fixes the review query logic based on PR feedback and
-maintains the copyright year fix.
+This PR fixes a critical issue where the homepage was not displaying root beers with reviews due to service worker caching. The service worker was using a cache-first strategy that prevented the FastAPI route from executing, so reviews never appeared.
 
-Bug Fixes:
-- Fixed home page review query logic
-  - Simplified to use single $or query instead of flawed try-except fallback
-  - Empty query results don't raise exceptions, so exception handling was unnecessary
-  - Now uses efficient single query that handles both string and ObjectId formats
-  - Removed redundant fallback logic that would never execute
-- Fixed copyright year displaying function object instead of actual year
-  - Changed template helper from function reference to lambda
-  - Ensures Jinja2 properly executes the function call
-  - Copyright now dynamically displays current year (e.g., "© 2025")
+Key Changes:
+- Changed service worker to use network-first strategy for homepage
+  - Homepage now always fetches fresh data from server first
+  - Service worker still caches response for offline use
+  - Ensures reviews display correctly on every visit
+- Removed homepage from initial cache list
+- Bumped service worker cache version to v2 to clear old cached data
+- Cleaned up excessive debug logging statements
+- Fixed indentation issues in homepage route
 
-Technical Details:
-- Updated app/routes/public.py: Simplified review query to use $or directly
-  - Removed unnecessary try-except block and nested if statements
-  - Single query handles both string and ObjectId formats efficiently
-- Updated app/templates_helpers.py: Changed current_year from function
-  reference to lambda for proper Jinja2 template execution
+The fix ensures that:
+- Homepage route is always executed (visible in server logs)
+- Reviews display correctly when they exist in the database
+- Service worker still provides offline functionality
+- Fresh data is always shown to users
 
-Files Changed:
-- app/routes/public.py: Simplified review query logic
-- app/templates_helpers.py: Fixed copyright year template helper
+Also updated ROADMAP.md to:
+- Mark pagination as completed
+- Add test suite as a high-priority feature
+- Update completed features list
+

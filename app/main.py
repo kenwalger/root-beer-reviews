@@ -4,6 +4,15 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi.exceptions import HTTPException
 from contextlib import asynccontextmanager
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
 from app.database import connect_to_mongo, close_mongo_connection
 from app.routes import auth, admin, public
 from app.auth import initialize_admin_user

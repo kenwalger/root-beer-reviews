@@ -185,7 +185,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Home Page**: Root beers with reviews now display correctly on homepage
   - Fixed review query to handle both string and ObjectId formats for `root_beer_id` using `$or` query
   - Simplified query logic to use single efficient query instead of multiple fallback attempts
-  - Added debug logging to help diagnose query issues
+  - **Service Worker Caching**: Changed homepage to use network-first strategy instead of cache-first
+    - Homepage now always fetches fresh data from server, ensuring reviews display correctly
+    - Service worker still caches for offline use, but network request happens first
+    - Removed homepage from initial cache list and bumped cache version to v2
+    - Resolves issue where cached homepage prevented route execution and review display
 - **Copyright Year**: Fixed copyright year displaying function object instead of actual year
   - Changed template helper from function reference to lambda for proper Jinja2 execution
   - Copyright now correctly displays current year dynamically
@@ -195,6 +199,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added table of contents to Root Beer Tasting & Review Guide
   - Moved tasting guide link to prominent "Getting Started" section in README
   - Improved navigation and readability of documentation
+- **Code Quality**: Cleaned up debug logging statements
+  - Removed excessive print statements from homepage route
+  - Removed debug logging from admin routes
+  - Maintained proper INFO-level logging for production use
 
 ### Planned
 - Public commenting system

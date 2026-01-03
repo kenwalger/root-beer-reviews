@@ -46,6 +46,11 @@
             </select>
         </div>
         
+        <!-- Preserve per_page when filtering -->
+        {% if query_params.per_page %}
+        <input type="hidden" name="per_page" value="{{ query_params.per_page }}">
+        {% endif %}
+        
         <div class="md:col-span-4">
             <button type="submit" class="btn-primary">Apply Filters</button>
             <a href="/" class="btn-secondary ml-2">Clear</a>
@@ -86,5 +91,8 @@
     <p class="text-gray-500 text-lg">No root beers found. Check back soon for reviews!</p>
 </div>
 {% endif %}
+
+<!-- Pagination -->
+{% include "partials/pagination.html" %}
 {% endblock %}
 

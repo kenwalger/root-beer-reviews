@@ -1,7 +1,6 @@
 // Service Worker for Root Beer Review App
-const CACHE_NAME = 'root-beer-reviews-v1';
+const CACHE_NAME = 'root-beer-reviews-v2';
 const urlsToCache = [
-  '/',
   '/static/css/style.css',
   '/static/manifest.json',
 ];
@@ -88,7 +87,29 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // For cacheable routes, use cache-first strategy
+  // For homepage, use network-first strategy to always get fresh data
+  if (url.pathname === '/') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // If network request succeeds, cache it for offline use
+          if (response && response.status === 200 && response.type === 'basic') {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // If network fails, try to return cached version
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+  
+  // For other cacheable routes, use cache-first strategy
   event.respondWith(
     caches.match(event.request)
       .then((response) => {

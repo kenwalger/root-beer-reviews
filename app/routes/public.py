@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 from app.database import get_database
 from app.routes.auth import get_admin_optional
 from app.templates_helpers import templates
+from app.utils.pagination import get_pagination_params, calculate_pagination_info, build_pagination_url
 from bson import ObjectId
 from typing import Optional
 import logging
@@ -18,6 +19,9 @@ router = APIRouter()
 async def homepage(request: Request):
     """Homepage listing all reviewed root beers."""
     db = get_database()
+    
+    # Get pagination parameters
+    pagination = get_pagination_params(request, default_per_page=20)
     
     # Get filter/sort parameters
     brand_filter = request.query_params.get("brand")
@@ -35,30 +39,22 @@ async def homepage(request: Request):
             {"country": {"$regex": region_filter, "$options": "i"}},
         ]
     
-    # Get root beers
-    rootbeers = await db.rootbeers.find(query).to_list(1000)
+    # Get all root beers matching query (for counting and processing)
+    all_rootbeers = await db.rootbeers.find(query).to_list(1000)
     
     # Get review data for each root beer
-    for rb in rootbeers:
+    for rb in all_rootbeers:
         rootbeer_id_obj = rb["_id"]  # Keep original ObjectId
         rootbeer_id_str = str(rootbeer_id_obj)
         rb["_id"] = rootbeer_id_str
         # Query for reviews - root_beer_id is stored as string in reviews
-        # Use $or to handle both string and ObjectId formats in a single query
+        # Use $or to handle both string and ObjectId formats (some reviews might have been created with ObjectId)
         reviews = await db.reviews.find({
             "$or": [
                 {"root_beer_id": rootbeer_id_str},
                 {"root_beer_id": rootbeer_id_obj}
             ]
         }).to_list(100)
-        
-        # Debug: log if we found reviews
-        if reviews:
-            logger.debug(f"Found {len(reviews)} reviews for rootbeer {rootbeer_id_str}")
-        else:
-            # Check if any reviews exist at all
-            total_reviews = await db.reviews.count_documents({})
-            logger.debug(f"No reviews found for rootbeer {rootbeer_id_str} (total reviews in DB: {total_reviews})")
         
         if reviews:
             # Calculate average scores
@@ -72,43 +68,64 @@ async def homepage(request: Request):
             rb["latest_review_date"] = None
     
     # Filter out root beers without reviews
-    rootbeers = [rb for rb in rootbeers if rb["review_count"] > 0]
+    rootbeers_with_reviews = [rb for rb in all_rootbeers if rb["review_count"] > 0]
     
     # Sort
     reverse_order = sort_order == "desc"
     if sort_by == "name":
-        rootbeers.sort(key=lambda x: x.get("name", "").lower(), reverse=reverse_order)
+        rootbeers_with_reviews.sort(key=lambda x: x.get("name", "").lower(), reverse=reverse_order)
     elif sort_by == "brand":
-        rootbeers.sort(key=lambda x: x.get("brand", "").lower(), reverse=reverse_order)
+        rootbeers_with_reviews.sort(key=lambda x: x.get("brand", "").lower(), reverse=reverse_order)
     elif sort_by == "score":
-        rootbeers.sort(key=lambda x: x.get("average_score") or 0, reverse=reverse_order)
+        rootbeers_with_reviews.sort(key=lambda x: x.get("average_score") or 0, reverse=reverse_order)
+    
+    # Calculate pagination
+    total_items = len(rootbeers_with_reviews)
+    pagination_info = calculate_pagination_info(total_items, pagination["page"], pagination["per_page"])
+    
+    # Apply pagination (slice the sorted list)
+    start_idx = pagination["skip"]
+    end_idx = start_idx + pagination["limit"]
+    rootbeers = rootbeers_with_reviews[start_idx:end_idx]
     
     # Get unique brands and regions for filters
-    all_rootbeers = await db.rootbeers.find().to_list(1000)
-    brands = sorted(set(rb.get("brand", "") for rb in all_rootbeers if rb.get("brand")))
+    all_rootbeers_for_filters = await db.rootbeers.find().to_list(1000)
+    brands = sorted(set(rb.get("brand", "") for rb in all_rootbeers_for_filters if rb.get("brand")))
     regions = sorted(set(
         rb.get("region", "") or rb.get("country", "")
-        for rb in all_rootbeers
+        for rb in all_rootbeers_for_filters
         if rb.get("region") or rb.get("country")
     ))
+    
+    # Build query params for pagination URLs
+    query_params = {
+        "brand": brand_filter or "",
+        "region": region_filter or "",
+        "sort": sort_by,
+        "order": sort_order,
+        "per_page": pagination["per_page"],
+    }
     
     # Check if user is logged in as admin
     admin = get_admin_optional(request)
     
     return templates.TemplateResponse(
         "public/home.html",
-        {
-            "request": request,
-            "rootbeers": rootbeers,
-            "brands": brands,
-            "regions": regions,
-            "current_brand": brand_filter,
-            "current_region": region_filter,
-            "sort_by": sort_by,
-            "sort_order": sort_order,
-            "admin": admin,
-        }
-    )
+            {
+                "request": request,
+                "rootbeers": rootbeers,
+                "brands": brands,
+                "regions": regions,
+                "current_brand": brand_filter,
+                "current_region": region_filter,
+                "sort_by": sort_by,
+                "sort_order": sort_order,
+                "admin": admin,
+                "pagination": pagination_info,
+                "query_params": query_params,
+                "build_pagination_url": build_pagination_url,
+            }
+        )
 
 
 @router.get("/rootbeers/{rootbeer_id}", response_class=HTMLResponse)
