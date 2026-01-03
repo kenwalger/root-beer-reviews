@@ -1,4 +1,8 @@
-"""Review models."""
+"""Review models.
+
+This module defines Pydantic models for root beer reviews, including
+sensory ratings, subjective scores, and metadata.
+"""
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
@@ -7,7 +11,11 @@ from app.models.metadata import Metadata
 
 
 class ReviewBase(BaseModel):
-    """Base review schema."""
+    """Base review schema.
+    
+    Contains all sensory ratings (1-5 scale), descriptive attributes,
+    and subjective opinion scores for a root beer review.
+    """
     root_beer_id: str
     # Structured sensory ratings (1-5 scale)
     sweetness: int = Field(..., ge=1, le=5)
@@ -28,12 +36,20 @@ class ReviewBase(BaseModel):
 
 
 class ReviewCreate(ReviewBase):
-    """Schema for creating a review."""
+    """Schema for creating a review.
+    
+    Inherits all fields from ReviewBase. All required fields must
+    be provided when creating a new review.
+    """
     pass
 
 
 class ReviewUpdate(BaseModel):
-    """Schema for updating a review."""
+    """Schema for updating a review.
+    
+    All fields are optional, allowing partial updates.
+    Only provided fields will be updated.
+    """
     root_beer_id: Optional[str] = None
     sweetness: Optional[int] = Field(None, ge=1, le=5)
     carbonation_bite: Optional[int] = Field(None, ge=1, le=5)
@@ -50,13 +66,18 @@ class ReviewUpdate(BaseModel):
 
 
 class Review(ReviewBase, Metadata):
-    """Review model with metadata."""
-    id: str = Field(alias="_id")
+    """Review model with metadata.
+    
+    Complete review model including all base attributes and
+    audit trail metadata (created_at, updated_at, etc.).
+    """
+    id: str = Field(alias="_id")  #: Review ID (MongoDB ObjectId as string)
     
     class Config:
-        populate_by_name = True
+        """Pydantic configuration."""
+        populate_by_name = True  #: Allow both _id and id field names
         json_encoders = {
-            datetime: lambda v: v.isoformat(),
-            ObjectId: str,
+            datetime: lambda v: v.isoformat(),  #: Convert datetime to ISO format
+            ObjectId: str,  #: Convert ObjectId to string in JSON
         }
 

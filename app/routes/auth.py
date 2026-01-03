@@ -1,6 +1,11 @@
-"""Authentication routes."""
+"""Authentication routes.
+
+This module handles admin authentication, login, logout, and provides
+dependency functions for route protection.
+"""
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
 from fastapi.responses import RedirectResponse, HTMLResponse
+from typing import Optional
 from app.auth import authenticate_admin, create_access_token, decode_access_token
 from app.database import get_database
 from app.templates_helpers import templates
@@ -11,8 +16,17 @@ from app.config import settings
 router = APIRouter()
 
 
-def get_current_admin(request: Request) -> dict:
-    """Get current admin from session token."""
+def get_current_admin(request: Request) -> dict[str, str]:
+    """Get current admin from session token.
+    
+    Extracts and validates the admin JWT token from cookies.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :returns: Dictionary with admin email
+    :rtype: dict[str, str]
+    :raises HTTPException: If token is missing or invalid
+    """
     token = request.cookies.get("admin_token")
     if not token:
         raise HTTPException(
@@ -37,9 +51,17 @@ def get_current_admin(request: Request) -> dict:
         )
 
 
-def get_admin_optional(request: Request) -> dict | None:
-    """Get current admin from session token if available, return None if not authenticated.
-    This is a non-blocking version for use in public routes."""
+def get_admin_optional(request: Request) -> Optional[dict[str, str]]:
+    """Get current admin from session token if available.
+    
+    Non-blocking version that returns None if not authenticated.
+    Used in public routes to conditionally show admin UI elements.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :returns: Dictionary with admin email if authenticated, None otherwise
+    :rtype: Optional[dict[str, str]]
+    """
     token = request.cookies.get("admin_token")
     if not token:
         return None
@@ -54,8 +76,14 @@ def get_admin_optional(request: Request) -> dict | None:
 
 
 @router.get("/admin/login", response_class=HTMLResponse)
-async def login_page(request: Request):
-    """Display login page."""
+async def login_page(request: Request) -> HTMLResponse:
+    """Display login page.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :returns: HTML response with login page
+    :rtype: HTMLResponse
+    """
     return templates.TemplateResponse("admin/login.html", {"request": request})
 
 
@@ -64,8 +92,21 @@ async def login(
     request: Request,
     email: str = Form(...),
     password: str = Form(...)
-):
-    """Handle admin login."""
+) -> RedirectResponse | HTMLResponse:
+    """Handle admin login.
+    
+    Authenticates the admin user and sets a secure HTTP-only cookie
+    with the JWT access token.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :param email: Admin email address
+    :type email: str
+    :param password: Admin password
+    :type password: str
+    :returns: Redirect to admin dashboard on success, login page with error on failure
+    :rtype: RedirectResponse | HTMLResponse
+    """
     user = await authenticate_admin(email, password)
     if not user:
         return templates.TemplateResponse(
@@ -94,8 +135,14 @@ async def login(
 
 
 @router.get("/admin/logout")
-async def logout():
-    """Handle admin logout."""
+async def logout() -> RedirectResponse:
+    """Handle admin logout.
+    
+    Deletes the admin authentication cookie and redirects to login page.
+    
+    :returns: Redirect to login page
+    :rtype: RedirectResponse
+    """
     response = RedirectResponse(url="/admin/login", status_code=status.HTTP_303_SEE_OTHER)
     response.delete_cookie(
         "admin_token", 
@@ -106,8 +153,18 @@ async def logout():
     return response
 
 
-async def require_admin(request: Request) -> dict:
-    """Dependency to require admin authentication."""
+async def require_admin(request: Request) -> dict[str, str]:
+    """Dependency to require admin authentication.
+    
+    FastAPI dependency function that ensures the route is only accessible
+    to authenticated admin users. Raises HTTPException if not authenticated.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :returns: Dictionary with admin email
+    :rtype: dict[str, str]
+    :raises HTTPException: If user is not authenticated
+    """
     try:
         return get_current_admin(request)
     except HTTPException:

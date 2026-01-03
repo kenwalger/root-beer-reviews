@@ -1,4 +1,8 @@
-"""Public routes for viewing root beers and reviews."""
+"""Public routes for viewing root beers and reviews.
+
+This module provides public-facing routes that don't require authentication.
+All routes are accessible to anyone and display root beer and review data.
+"""
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from app.database import get_database
@@ -16,8 +20,18 @@ router = APIRouter()
 
 
 @router.get("/", response_class=HTMLResponse)
-async def homepage(request: Request):
-    """Homepage listing all reviewed root beers."""
+async def homepage(request: Request) -> HTMLResponse:
+    """Homepage listing all reviewed root beers.
+    
+    Displays a paginated list of root beers that have reviews, with
+    filtering and sorting options. Only root beers with at least one
+    review are shown.
+    
+    :param request: FastAPI request object
+    :type request: Request
+    :returns: HTML response with homepage
+    :rtype: HTMLResponse
+    """
     db = get_database()
     
     # Get pagination parameters
@@ -192,8 +206,17 @@ async def view_rootbeer_public(rootbeer_id: str, request: Request):
 
 
 @router.get("/reviews/{review_id}", response_class=HTMLResponse)
-async def view_review_public(review_id: str, request: Request):
-    """Public view of a single review."""
+async def view_review_public(review_id: str, request: Request) -> HTMLResponse:
+    """Public view of a single review.
+    
+    :param review_id: Review ID
+    :type review_id: str
+    :param request: FastAPI request object
+    :type request: Request
+    :returns: HTML response with review details
+    :rtype: HTMLResponse
+    :raises HTTPException: If review not found
+    """
     db = get_database()
     review = await db.reviews.find_one({"_id": ObjectId(review_id)})
     if not review:

@@ -1,4 +1,8 @@
-"""Utility functions for form parsing and data conversion."""
+"""Utility functions for form parsing and data conversion.
+
+This module provides utilities for parsing form data and converting
+types appropriately, as well as re-exporting pagination utilities.
+"""
 from typing import Any, Dict, Optional
 from datetime import datetime
 
@@ -18,7 +22,19 @@ __all__ = [
 
 
 def parse_form_data(form_data: Dict[str, Any]) -> Dict[str, Any]:
-    """Parse form data and convert types appropriately."""
+    """Parse form data and convert types appropriately.
+    
+    Converts string form values to appropriate Python types:
+    - Numeric fields (int/float)
+    - Boolean fields
+    - Date fields (datetime)
+    - List fields (for checkboxes)
+    
+    :param form_data: Raw form data dictionary
+    :type form_data: Dict[str, Any]
+    :returns: Parsed form data with converted types
+    :rtype: Dict[str, Any]
+    """
     parsed = {}
     
     for key, value in form_data.items():

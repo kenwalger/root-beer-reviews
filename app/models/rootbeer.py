@@ -1,4 +1,8 @@
-"""Root beer models."""
+"""Root beer models.
+
+This module defines Pydantic models for root beer entities, including
+base schemas, creation/update schemas, and the full model with metadata.
+"""
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from bson import ObjectId
@@ -6,7 +10,11 @@ from app.models.metadata import Metadata
 
 
 class RootBeerBase(BaseModel):
-    """Base root beer schema."""
+    """Base root beer schema.
+    
+    Contains all objective attributes of a root beer that can be
+    measured or observed without tasting.
+    """
     name: str = Field(..., min_length=1, max_length=200)
     brand: str = Field(..., min_length=1, max_length=100)
     region: Optional[str] = Field(None, max_length=100)
@@ -25,12 +33,20 @@ class RootBeerBase(BaseModel):
 
 
 class RootBeerCreate(RootBeerBase):
-    """Schema for creating a root beer."""
+    """Schema for creating a root beer.
+    
+    Inherits all fields from RootBeerBase. All fields are required
+    except those marked as Optional.
+    """
     pass
 
 
 class RootBeerUpdate(BaseModel):
-    """Schema for updating a root beer."""
+    """Schema for updating a root beer.
+    
+    All fields are optional, allowing partial updates.
+    Only provided fields will be updated.
+    """
     name: Optional[str] = Field(None, min_length=1, max_length=200)
     brand: Optional[str] = Field(None, min_length=1, max_length=100)
     region: Optional[str] = Field(None, max_length=100)
@@ -47,12 +63,17 @@ class RootBeerUpdate(BaseModel):
 
 
 class RootBeer(RootBeerBase, Metadata):
-    """Root beer model with metadata."""
-    id: str = Field(alias="_id")
+    """Root beer model with metadata.
+    
+    Complete root beer model including all base attributes and
+    audit trail metadata (created_at, updated_at, etc.).
+    """
+    id: str = Field(alias="_id")  #: Root beer ID (MongoDB ObjectId as string)
     
     class Config:
-        populate_by_name = True
+        """Pydantic configuration."""
+        populate_by_name = True  #: Allow both _id and id field names
         json_encoders = {
-            ObjectId: str,
+            ObjectId: str,  #: Convert ObjectId to string in JSON
         }
 
