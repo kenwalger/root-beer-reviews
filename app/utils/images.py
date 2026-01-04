@@ -8,7 +8,7 @@ from botocore.exceptions import ClientError
 from fastapi import UploadFile, HTTPException
 from app.config import settings
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional
 
 # Initialize S3 client (only if credentials are provided)
@@ -78,7 +78,7 @@ async def upload_image(file: UploadFile, rootbeer_id: str) -> str:
     # For MVP, we'll trust the file extension. Can add Pillow verification later.
     
     # Generate unique filename
-    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     unique_id = str(uuid.uuid4())[:8]
     # Preserve original extension
     filename = f"{rootbeer_id}/{timestamp}_{unique_id}{file_ext}"

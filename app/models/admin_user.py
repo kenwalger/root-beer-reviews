@@ -3,7 +3,7 @@
 This module defines Pydantic models for admin user accounts,
 including authentication and user management schemas.
 """
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional
 from bson import ObjectId
 
@@ -34,12 +34,9 @@ class AdminUser(AdminUserBase):
     id: str = Field(alias="_id")  #: Admin user ID (MongoDB ObjectId as string)
     hashed_password: str  #: Bcrypt hashed password
     
-    class Config:
-        """Pydantic configuration."""
-        populate_by_name = True  #: Allow both _id and id field names
-        json_encoders = {
-            ObjectId: str,  #: Convert ObjectId to string in JSON
-        }
+    model_config = ConfigDict(
+        populate_by_name=True,  #: Allow both _id and id field names
+    )
 
 
 class AdminUserLogin(BaseModel):

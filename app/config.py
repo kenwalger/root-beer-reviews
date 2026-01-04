@@ -4,6 +4,7 @@ This module defines the application settings schema and loads configuration
 from environment variables via a .env file.
 """
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 from typing import Optional
 
 
@@ -35,10 +36,10 @@ class Settings(BaseSettings):
     # Environment
     environment: str = "development"  #: Application environment (default: "development")
     
-    class Config:
-        """Pydantic configuration."""
-        env_file = ".env"  #: Path to .env file
-        case_sensitive = False  #: Environment variable names are case-insensitive
+    model_config = ConfigDict(
+        env_file=".env",  #: Path to .env file
+        case_sensitive=False,  #: Environment variable names are case-insensitive
+    )
 
 
 # Global settings instance

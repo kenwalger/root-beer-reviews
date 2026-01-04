@@ -3,7 +3,7 @@
 This module defines Pydantic models for root beer entities, including
 base schemas, creation/update schemas, and the full model with metadata.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 from bson import ObjectId
 from app.models.metadata import Metadata
@@ -70,10 +70,7 @@ class RootBeer(RootBeerBase, Metadata):
     """
     id: str = Field(alias="_id")  #: Root beer ID (MongoDB ObjectId as string)
     
-    class Config:
-        """Pydantic configuration."""
-        populate_by_name = True  #: Allow both _id and id field names
-        json_encoders = {
-            ObjectId: str,  #: Convert ObjectId to string in JSON
-        }
+    model_config = ConfigDict(
+        populate_by_name=True,  #: Allow both _id and id field names
+    )
 

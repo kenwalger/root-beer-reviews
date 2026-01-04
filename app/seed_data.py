@@ -4,7 +4,7 @@ This module provides functionality to seed the database with default
 flavor notes, colors, and serving contexts from the planning documents.
 The seeding is idempotent - it only inserts data if collections are empty.
 """
-from datetime import datetime
+from datetime import datetime, UTC
 from app.database import get_database
 
 
@@ -17,7 +17,7 @@ async def seed_default_data() -> None:
     :raises Exception: If database operations fail
     """
     db = get_database()
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     
     # Default flavor notes from planning/initial_thoughts.md
     default_flavor_notes = [

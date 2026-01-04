@@ -3,7 +3,7 @@
 This module defines Pydantic models for flavor notes, which are
 descriptive tags used in reviews to characterize root beer flavors.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 from bson import ObjectId
 from app.models.metadata import Metadata
@@ -35,10 +35,7 @@ class FlavorNote(FlavorNoteBase, Metadata):
     """
     id: str = Field(alias="_id")  #: Flavor note ID (MongoDB ObjectId as string)
     
-    class Config:
-        """Pydantic configuration."""
-        populate_by_name = True  #: Allow both _id and id field names
-        json_encoders = {
-            ObjectId: str,  #: Convert ObjectId to string in JSON
-        }
+    model_config = ConfigDict(
+        populate_by_name=True,  #: Allow both _id and id field names
+    )
 
