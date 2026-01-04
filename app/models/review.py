@@ -3,9 +3,9 @@
 This module defines Pydantic models for root beer reviews, including
 sensory ratings, subjective scores, and metadata.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, UTC
 from bson import ObjectId
 from app.models.metadata import Metadata
 
@@ -31,7 +31,7 @@ class ReviewBase(BaseModel):
     would_drink_again: bool = True
     uniqueness_score: Optional[int] = Field(None, ge=1, le=10)
     # Metadata
-    review_date: datetime = Field(default_factory=datetime.utcnow)
+    review_date: datetime = Field(default_factory=lambda: datetime.now(UTC))
     serving_context: Optional[str] = Field(None, max_length=50)  # Selected from dropdown
 
 
@@ -73,11 +73,7 @@ class Review(ReviewBase, Metadata):
     """
     id: str = Field(alias="_id")  #: Review ID (MongoDB ObjectId as string)
     
-    class Config:
-        """Pydantic configuration."""
-        populate_by_name = True  #: Allow both _id and id field names
-        json_encoders = {
-            datetime: lambda v: v.isoformat(),  #: Convert datetime to ISO format
-            ObjectId: str,  #: Convert ObjectId to string in JSON
-        }
+    model_config = ConfigDict(
+        populate_by_name=True,  #: Allow both _id and id field names
+    )
 

@@ -5,7 +5,7 @@ and admin user authentication functions.
 """
 import bcrypt
 from jose import JWTError, jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Optional
 from app.config import settings
 from fastapi import HTTPException, status
@@ -17,6 +17,9 @@ from bson import ObjectId
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash.
     
+    Passwords longer than 72 bytes are truncated to match bcrypt's limit,
+    consistent with get_password_hash behavior.
+    
     :param plain_password: Plain text password to verify
     :type plain_password: str
     :param hashed_password: Bcrypt hashed password
@@ -25,8 +28,13 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     :rtype: bool
     """
     try:
-        # Bcrypt expects bytes
-        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+        # Bcrypt expects bytes and has a 72-byte limit
+        # Truncate to match get_password_hash behavior
+        password_bytes = plain_password.encode('utf-8')
+        if len(password_bytes) > 72:
+            password_bytes = password_bytes[:72]
+        
+        return bcrypt.checkpw(password_bytes, hashed_password.encode('utf-8'))
     except Exception:
         return False
 
@@ -64,9 +72,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     """
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(hours=24)
+        expire = datetime.now(UTC) + timedelta(hours=24)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
     return encoded_jwt
@@ -101,7 +109,7 @@ async def get_admin_user_by_email(email: str) -> Optional[AdminUser]:
     :rtype: Optional[AdminUser]
     """
     db = get_database()
-    if not db:
+    if db is None:
         return None
     user_doc = await db.admin_users.find_one({"email": email})
     if user_doc:
@@ -149,7 +157,7 @@ async def initialize_admin_user() -> None:
         return
     
     db = get_database()
-    if not db:
+    if db is None:
         print("Database not available for admin user initialization")
         return
     existing = await db.admin_users.find_one({"email": settings.admin_email})
@@ -158,8 +166,8 @@ async def initialize_admin_user() -> None:
             "email": settings.admin_email,
             "hashed_password": get_password_hash(settings.admin_password),
             "is_active": True,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow(),
+            "created_at": datetime.now(UTC),
+            "updated_at": datetime.now(UTC),
             "created_by": "system",
             "updated_by": "system",
         }

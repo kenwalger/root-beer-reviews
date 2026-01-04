@@ -84,7 +84,7 @@ async def login_page(request: Request) -> HTMLResponse:
     :returns: HTML response with login page
     :rtype: HTMLResponse
     """
-    return templates.TemplateResponse("admin/login.html", {"request": request})
+    return templates.TemplateResponse(request, "admin/login.html", {})
 
 
 @router.post("/admin/login")
@@ -92,7 +92,7 @@ async def login(
     request: Request,
     email: str = Form(...),
     password: str = Form(...)
-) -> RedirectResponse | HTMLResponse:
+):
     """Handle admin login.
     
     Authenticates the admin user and sets a secure HTTP-only cookie
@@ -110,8 +110,9 @@ async def login(
     user = await authenticate_admin(email, password)
     if not user:
         return templates.TemplateResponse(
+            request,
             "admin/login.html",
-            {"request": request, "error": "Incorrect email or password"},
+            {"error": "Incorrect email or password"},
             status_code=status.HTTP_401_UNAUTHORIZED
         )
     

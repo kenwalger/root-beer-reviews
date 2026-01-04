@@ -124,9 +124,9 @@ async def homepage(request: Request) -> HTMLResponse:
     admin = get_admin_optional(request)
     
     return templates.TemplateResponse(
+        request,
         "public/home.html",
         {
-            "request": request,
             "rootbeers": rootbeers,
             "brands": brands,
             "regions": regions,
@@ -194,9 +194,9 @@ async def view_rootbeer_public(rootbeer_id: str, request: Request):
     admin = get_admin_optional(request)
     
     return templates.TemplateResponse(
+        request,
         "public/rootbeer.html",
         {
-            "request": request,
             "rootbeer": rootbeer,
             "reviews": reviews,
             "avg_scores": avg_scores,
@@ -244,9 +244,9 @@ async def view_review_public(review_id: str, request: Request) -> HTMLResponse:
     admin = get_admin_optional(request)
     
     return templates.TemplateResponse(
+        request,
         "public/review.html",
         {
-            "request": request,
             "review": review,
             "rootbeer": rootbeer,
             "flavor_notes": flavor_notes,

@@ -15,7 +15,7 @@ from app.templates_helpers import templates
 from app.utils.images import upload_image, delete_image
 from app.utils.pagination import get_pagination_params, calculate_pagination_info, build_pagination_url
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import List, Optional, Dict, Any
 
 
@@ -55,9 +55,9 @@ async def admin_dashboard(
                 review["rootbeer_name"] = rootbeer.get("name", "Unknown")
     
     return templates.TemplateResponse(
+        request,
         "admin/dashboard.html",
         {
-            "request": request,
             "admin": admin,
             "rootbeer_count": rootbeer_count,
             "review_count": review_count,
@@ -108,9 +108,9 @@ async def list_rootbeers(
     }
     
     return templates.TemplateResponse(
+        request,
         "admin/rootbeers/list.html",
         {
-            "request": request,
             "admin": admin,
             "rootbeers": rootbeers,
             "pagination": pagination_info,
@@ -140,8 +140,9 @@ async def new_rootbeer_form(
         color["_id"] = str(color["_id"])
     
     return templates.TemplateResponse(
+        request,
         "admin/rootbeers/new.html",
-        {"request": request, "admin": admin, "colors": colors}
+        {"admin": admin, "colors": colors}
     )
 
 
@@ -205,7 +206,7 @@ async def create_rootbeer(
     :raises HTTPException: If image upload fails
     """
     db = get_database()
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     
     rootbeer_dict = {
         "name": name,
@@ -306,9 +307,9 @@ async def view_rootbeer(
         color["_id"] = str(color["_id"])
     
     return templates.TemplateResponse(
+        request,
         "admin/rootbeers/view.html",
         {
-            "request": request,
             "admin": admin,
             "rootbeer": rootbeer,
             "reviews": reviews,
@@ -340,7 +341,7 @@ async def update_rootbeer(
     """
     db = get_database()
     update_data = rootbeer.model_dump(exclude_unset=True)
-    update_data["updated_at"] = datetime.utcnow()
+    update_data["updated_at"] = datetime.now(UTC)
     update_data["updated_by"] = admin["email"]
     
     result = await db.rootbeers.update_one(
@@ -434,7 +435,7 @@ async def upload_rootbeer_image(
             "$set": {
                 "images": images,
                 "primary_image": primary_image,
-                "updated_at": datetime.utcnow(),
+                "updated_at": datetime.now(UTC),
                 "updated_by": admin["email"],
             }
         }
@@ -494,7 +495,7 @@ async def delete_rootbeer_image(
             "$set": {
                 "images": images,
                 "primary_image": primary_image,
-                "updated_at": datetime.utcnow(),
+                "updated_at": datetime.now(UTC),
                 "updated_by": admin["email"],
             }
         }
@@ -536,7 +537,7 @@ async def set_primary_image(
         {
             "$set": {
                 "primary_image": image_url,
-                "updated_at": datetime.utcnow(),
+                "updated_at": datetime.now(UTC),
                 "updated_by": admin["email"],
             }
         }
@@ -589,9 +590,9 @@ async def list_reviews(
     }
     
     return templates.TemplateResponse(
+        request,
         "admin/reviews/list.html",
         {
-            "request": request,
             "admin": admin,
             "reviews": reviews,
             "pagination": pagination_info,
@@ -629,9 +630,9 @@ async def new_review_form(
         sc["_id"] = str(sc["_id"])
     
     return templates.TemplateResponse(
+        request,
         "admin/reviews/new.html",
         {
-            "request": request,
             "admin": admin,
             "rootbeers": rootbeers,
             "flavor_notes": flavor_notes,
@@ -705,9 +706,9 @@ async def create_review(
     try:
         review_date_obj = datetime.fromisoformat(review_date)
     except (ValueError, TypeError):
-        review_date_obj = datetime.utcnow()
+        review_date_obj = datetime.now(UTC)
     
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     review_dict = {
         "root_beer_id": root_beer_id,
         "review_date": review_date_obj,
@@ -789,9 +790,9 @@ async def view_review(
         sc["_id"] = str(sc["_id"])
     
     return templates.TemplateResponse(
+        request,
         "admin/reviews/view.html",
         {
-            "request": request,
             "admin": admin,
             "review": review,
             "rootbeer": rootbeer,
@@ -893,7 +894,7 @@ async def update_review(
     if flavor_notes:
         update_data["flavor_notes"] = flavor_notes if isinstance(flavor_notes, list) else [flavor_notes]
     
-    update_data["updated_at"] = datetime.utcnow()
+    update_data["updated_at"] = datetime.now(UTC)
     update_data["updated_by"] = admin["email"]
     
     result = await db.reviews.update_one(
@@ -954,8 +955,9 @@ async def list_flavor_notes(
         fn["_id"] = str(fn["_id"])
     
     return templates.TemplateResponse(
+        request,
         "admin/flavor-notes/list.html",
-        {"request": request, "admin": admin, "flavor_notes": flavor_notes}
+        {"admin": admin, "flavor_notes": flavor_notes}
     )
 
 
@@ -980,7 +982,7 @@ async def create_flavor_note(
     :rtype: RedirectResponse
     """
     db = get_database()
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     
     fn_dict = {
         "name": name,
@@ -1049,9 +1051,9 @@ async def metadata_management(
         sc["_id"] = str(sc["_id"])
     
     return templates.TemplateResponse(
+        request,
         "admin/metadata.html",
         {
-            "request": request,
             "admin": admin,
             "colors": colors,
             "serving_contexts": serving_contexts,
@@ -1061,23 +1063,20 @@ async def metadata_management(
 
 @router.post("/admin/metadata/colors")
 async def create_color(
-    name: str,
-    request: Request,
+    name: str = Form(...),
     admin: dict[str, str] = Depends(require_admin)
 ) -> RedirectResponse:
     """Create a new color option.
     
     :param name: Color name
     :type name: str
-    :param request: FastAPI request object
-    :type request: Request
     :param admin: Authenticated admin user information
     :type admin: dict[str, str]
     :returns: Redirect to metadata management page
     :rtype: RedirectResponse
     """
     db = get_database()
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     
     color_dict = {
         "name": name,
@@ -1119,23 +1118,20 @@ async def delete_color(
 
 @router.post("/admin/metadata/serving-contexts")
 async def create_serving_context(
-    name: str,
-    request: Request,
+    name: str = Form(...),
     admin: dict[str, str] = Depends(require_admin)
 ) -> RedirectResponse:
     """Create a new serving context option.
     
     :param name: Serving context name
     :type name: str
-    :param request: FastAPI request object
-    :type request: Request
     :param admin: Authenticated admin user information
     :type admin: dict[str, str]
     :returns: Redirect to metadata management page
     :rtype: RedirectResponse
     """
     db = get_database()
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     
     sc_dict = {
         "name": name,
@@ -1196,9 +1192,9 @@ async def admin_account(
         user["_id"] = str(user["_id"])
     
     return templates.TemplateResponse(
+        request,
         "admin/account.html",
         {
-            "request": request,
             "admin": admin,
             "user": user,
         }
@@ -1212,7 +1208,7 @@ async def change_password(
     current_password: str = Form(...),
     new_password: str = Form(...),
     confirm_password: str = Form(...),
-) -> RedirectResponse | HTMLResponse:
+):
     """Change admin password.
     
     :param request: FastAPI request object
@@ -1242,9 +1238,9 @@ async def change_password(
         if user_doc:
             user_doc["_id"] = str(user_doc["_id"])
         return templates.TemplateResponse(
+            request,
             "admin/account.html",
             {
-                "request": request,
                 "admin": admin,
                 "user": user_doc,
                 "error": "Current password is incorrect",
@@ -1259,9 +1255,9 @@ async def change_password(
         if user_doc:
             user_doc["_id"] = str(user_doc["_id"])
         return templates.TemplateResponse(
+            request,
             "admin/account.html",
             {
-                "request": request,
                 "admin": admin,
                 "user": user_doc,
                 "error": "New passwords do not match",
@@ -1275,9 +1271,9 @@ async def change_password(
         if user_doc:
             user_doc["_id"] = str(user_doc["_id"])
         return templates.TemplateResponse(
+            request,
             "admin/account.html",
             {
-                "request": request,
                 "admin": admin,
                 "user": user_doc,
                 "error": "Password must be at least 8 characters long",
@@ -1293,7 +1289,7 @@ async def change_password(
         {
             "$set": {
                 "hashed_password": hashed_password,
-                "updated_at": datetime.utcnow(),
+                "updated_at": datetime.now(UTC),
                 "updated_by": admin["email"],
             }
         }

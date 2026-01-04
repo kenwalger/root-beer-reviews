@@ -200,11 +200,42 @@ The guide covers:
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+### Testing
+
+The project includes a comprehensive test suite with 108 tests achieving 76% code coverage.
+
+**Run tests**:
+```bash
+# Run all tests
+uv run pytest
+
+# Run with coverage report
+uv run pytest --cov=app --cov-report=term-missing --cov-report=html
+
+# Run specific test file
+uv run pytest tests/test_auth.py
+
+# Run tests with specific marker
+uv run pytest -m "integration"
+```
+
+**Test Configuration**:
+- Tests use MongoDB Atlas with a separate test database (configured via `MONGODB_URI` and `TEST_DATABASE_NAME`)
+- Test fixtures provide sample data and authenticated clients
+- S3 operations are mocked for image upload tests
+- See [tests/README.md](tests/README.md) for detailed testing documentation
+
+**Test Coverage**:
+- Unit tests for models, utilities, and authentication
+- Integration tests for all routes (admin, public, auth)
+- Tests for CRUD operations, image management, metadata management
+- Authentication flow and error path testing
+
 ### Code Style
 
 - Follow PEP 8
-- Use type hints
-- Document functions and classes
+- Use type hints (comprehensive type hints throughout)
+- Sphinx-style docstrings for all functions and classes
 - Keep functions focused and small
 
 ## Progressive Web App (PWA)
