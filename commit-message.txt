@@ -1,70 +1,40 @@
-Add URL field to root beer entries with protocol validation
+Fix MongoDB serialization error for HttpUrl fields
 
-Added an optional website URL field to root beer entries, allowing admins
-to link to brand websites or product pages. The URL is displayed as a
-clickable link on public root beer pages.
+Fixed Internal Server Error that occurred when updating root beers with URL
+fields. The issue was that Pydantic's HttpUrl objects cannot be directly
+serialized to MongoDB - they must be converted to strings first.
 
-**Security**: Uses Pydantic's `HttpUrl` type to validate URLs and prevent
-XSS attacks by only allowing http:// and https:// protocols. Malicious
-protocols like javascript: and data: are automatically rejected.
+## Problem
 
-## Changes
+When using `model_dump()` on Pydantic models containing HttpUrl fields, the
+HttpUrl objects were being passed directly to MongoDB, causing:
+```
+bson.errors.InvalidDocument: cannot encode object: HttpUrl('...'), 
+of type: <class 'pydantic.networks.HttpUrl'>
+```
 
-### Model Updates
-- Added `url: Optional[HttpUrl]` field to `RootBeerBase` model
-- Added `url: Optional[HttpUrl]` field to `RootBeerUpdate` model
-- Field is optional and can be left empty
-- **Security**: HttpUrl type validates protocol, only allowing http:// and https://
-  - Prevents XSS attacks via javascript: and data: protocols
-  - Automatically rejects invalid or malicious URLs
+## Solution
 
-### Route Updates
-- Added `url: Optional[str] = Form(None)` parameter to `create_rootbeer` route
-- Added `url: Optional[str] = Form(None)` parameter to `update_rootbeer` route
-- **Security**: Both routes now validate URLs using Pydantic models
-  - `create_rootbeer` validates entire root beer data using `RootBeerCreate` model
-  - `update_rootbeer` validates using `RootBeerUpdate` model (already implemented)
-  - Invalid URLs (including malicious protocols) return HTTP 422 errors
-- URL field is normalized (empty strings converted to None) in update route
-- Updated route docstrings to document the new parameter
+Changed `model_dump(exclude_unset=True)` to `model_dump(exclude_unset=True, mode='json')`
+in all places where root beer data is stored in MongoDB:
 
-### Template Updates
-- **Admin New Form**: Added URL input field with placeholder and helper text
-- **Admin Edit Form**: Added URL input field with existing value display
-- **Public View**: Added "Visit Website →" link below brand name (only displays if URL exists)
-  - Link opens in new tab with `target="_blank"` and `rel="noopener noreferrer"` for security
+- **create_rootbeer route**: Converts HttpUrl to string before insert
+- **update_rootbeer route**: Converts HttpUrl to string before update
+- **import_root_beers.py script**: Converts HttpUrl to string before import
 
-### Import Script
-- Updated `scripts/import_root_beers.py` to handle `url` field from JSON import files
-- **Security**: Import script now validates URLs using `RootBeerCreate` Pydantic model
-  - Prevents malicious URLs from being imported via JSON files
-  - Validates URL protocol (only http:// and https:// allowed)
-  - Invalid URLs are rejected with detailed error messages
-  - Maintains same security standards as admin routes
-- URLs can now be included in bulk import operations
+## How It Works
 
-## Features
+- `mode='json'` tells Pydantic to serialize special types to JSON-compatible formats
+- HttpUrl objects are converted to strings (e.g., `"https://example.com"`)
+- MongoDB can store strings without issues
+- Security validation still occurs - invalid URLs are rejected before conversion
 
-- **Optional Field**: URL is not required, can be left empty
-- **Security**: Protocol validation using Pydantic's `HttpUrl` type
-  - Only allows http:// and https:// protocols
-  - Automatically rejects javascript:, data:, and other malicious protocols
-  - Prevents XSS attacks through URL injection
-- **Client-Side Validation**: Uses HTML5 `type="url"` input for user experience
-- **Server-Side Validation**: Pydantic models validate URLs before storage
-- **Public Display**: Shows as clickable link on public root beer pages
-  - Uses `target="_blank"` and `rel="noopener noreferrer"` for security
-- **Import Support**: Can be included in JSON import files for bulk operations
-- **Error Handling**: Invalid URLs return HTTP 422 with detailed error messages
+## Impact
 
-## Use Cases
+- Root beer updates with URLs now work correctly
+- No loss of security - URLs are still validated before storage
+- Consistent behavior across create, update, and import operations
 
-- Link to brand websites
-- Link to product pages
-- Link to where to buy the root beer
-- Link to manufacturer information
-- Any relevant external resource
-
-This enhancement makes it easier for users to find more information about
-root beers and discover where to purchase them.
+This fix ensures that the URL field works correctly while maintaining all
+security validations.
 

@@ -236,7 +236,7 @@ async def create_rootbeer(
     # Validate using Pydantic model (validates URL protocol, field constraints, etc.)
     try:
         rootbeer_create = RootBeerCreate(**rootbeer_data)
-        rootbeer_dict = rootbeer_create.model_dump(exclude_unset=True)
+        rootbeer_dict = rootbeer_create.model_dump(exclude_unset=True, mode='json')
     except ValidationError as e:
         # Convert Pydantic validation errors to HTTP 422
         raise HTTPException(
@@ -440,7 +440,7 @@ async def update_rootbeer(
     # accepts form-encoded data.
     try:
         rootbeer_update = RootBeerUpdate(**cleaned_data)
-        update_data = rootbeer_update.model_dump(exclude_unset=True)
+        update_data = rootbeer_update.model_dump(exclude_unset=True, mode='json')
     except ValidationError as e:
         # Convert Pydantic validation errors to HTTP 422 (same as FastAPI would)
         raise HTTPException(
