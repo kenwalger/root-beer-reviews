@@ -87,6 +87,7 @@ async def import_root_beers(
         region = root_beer.get('region', '').strip() or None
         country = root_beer.get('country', 'USA').strip()
         notes = root_beer.get('notes', '').strip() or None
+        url = root_beer.get('url', '').strip() or None
         
         # Check if root beer already exists
         if skip_existing:
@@ -102,6 +103,7 @@ async def import_root_beers(
             "region": region,
             "country": country,
             "notes": notes,
+            "url": url,
             "images": [],
             "created_at": now,
             "updated_at": now,

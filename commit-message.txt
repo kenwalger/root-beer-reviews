@@ -1,69 +1,48 @@
-Fix root beer update route with proper validation and error handling
+Add URL field to root beer entries
 
-Fixed the update_rootbeer route to properly handle form-encoded data from
-the HTML form instead of expecting JSON. The route was previously using a
-Pydantic model which FastAPI parsed from JSON, but the admin form submits
-form-encoded data.
+Added an optional website URL field to root beer entries, allowing admins
+to link to brand websites or product pages. The URL is displayed as a
+clickable link on public root beer pages.
 
 ## Changes
 
+### Model Updates
+- Added `url: Optional[str]` field to `RootBeerBase` model (max_length=500)
+- Added `url: Optional[str]` field to `RootBeerUpdate` model
+- Field is optional and can be left empty
+
 ### Route Updates
-- Updated `update_rootbeer` route in `app/routes/admin.py` to accept
-  individual `Form(...)` parameters instead of `RootBeerUpdate` model
-- Matches the pattern used in `create_rootbeer` route for consistency
-- All fields are optional to support partial updates
-- **Validation**: Restored Pydantic validation by reconstructing
-  `RootBeerUpdate` model from form data to enforce field constraints
-- Empty strings are normalized to `None` to prevent overwriting fields
-  with invalid/empty data
-- Validation errors are properly converted to HTTP 422 responses
-- Fixed deprecation warning: `HTTP_422_UNPROCESSABLE_ENTITY` →
-  `HTTP_422_UNPROCESSABLE_CONTENT`
+- Added `url: Optional[str] = Form(None)` parameter to `create_rootbeer` route
+- Added `url: Optional[str] = Form(None)` parameter to `update_rootbeer` route
+- URL field is normalized (empty strings converted to None) in update route
+- Updated route docstrings to document the new parameter
 
-### Test Updates
-- Updated `test_update_rootbeer_success` to use form data (`data={...}`)
-  instead of JSON (`json={...}`)
-- Updated `test_update_nonexistent_rootbeer` to use form data
-- Added `test_update_rootbeer_validation_errors` to comprehensively test
-  validation constraints:
-  - Name too long (max_length=200)
-  - Brand too long (max_length=100)
-  - Negative sugar value (ge=0)
-  - Alcohol content > 100% (le=100)
-  - CO2 volumes > 10 (le=10)
+### Template Updates
+- **Admin New Form**: Added URL input field with placeholder and helper text
+- **Admin Edit Form**: Added URL input field with existing value display
+- **Public View**: Added "Visit Website →" link below brand name (only displays if URL exists)
+  - Link opens in new tab with `target="_blank"` and `rel="noopener noreferrer"` for security
 
-### Documentation
-- Added comprehensive CLI commands reference in `planning/commands.md`
-  - Package management, testing, development, deployment commands
-  - Quick reference for common operations
+### Import Script
+- Updated `scripts/import_root_beers.py` to handle `url` field from JSON import files
+- URLs can now be included in bulk import operations
 
-## Bug Fix
+## Features
 
-This resolves the error users encountered when trying to update root beer
-notes or other fields via the admin interface:
+- **Optional Field**: URL is not required, can be left empty
+- **URL Validation**: Uses HTML5 `type="url"` input for basic validation
+- **Public Display**: Shows as clickable link on public root beer pages
+- **Import Support**: Can be included in JSON import files for bulk operations
+- **Max Length**: 500 characters to accommodate long URLs
 
-```
-{"detail":[{"type":"model_attributes_type","loc":["body"],
-"msg":"Input should be a valid dictionary or object to extract fields from",
-"input":"name=..."}]}
-```
+## Use Cases
 
-The form now correctly submits and updates root beer data as expected, with
-full validation to prevent invalid data from being saved.
+- Link to brand websites
+- Link to product pages
+- Link to where to buy the root beer
+- Link to manufacturer information
+- Any relevant external resource
 
-## Validation Improvements
+This enhancement makes it easier for users to find more information about
+root beers and discover where to purchase them.
 
-The fix addresses PR review concerns about validation bypass:
-- All field constraints (lengths, ranges, types) are enforced via
-  Pydantic's `RootBeerUpdate` model
-- Empty strings from HTML forms are normalized to `None` and excluded
-  from updates, preserving existing field values
-- Validation errors return proper HTTP 422 status codes with detailed
-  error messages
-- Comprehensive test coverage ensures validation works correctly
-
-## Test Results
-- **Total Tests**: 109 (up from 108)
-- **Passing**: 109/109 (100%)
-- **Coverage**: 76%
-- **Warnings**: 0 (fixed deprecation warnings)

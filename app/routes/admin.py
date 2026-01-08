@@ -164,6 +164,7 @@ async def create_rootbeer(
     carbonation_level: Optional[str] = Form(None),
     estimated_co2_volumes: Optional[float] = Form(None),
     notes: Optional[str] = Form(None),
+    url: Optional[str] = Form(None),
     files: Optional[List[UploadFile]] = File(None),
 ) -> RedirectResponse:
     """Create a new root beer.
@@ -200,6 +201,8 @@ async def create_rootbeer(
     :type estimated_co2_volumes: Optional[float]
     :param notes: Additional notes (optional)
     :type notes: Optional[str]
+    :param url: Website URL for the root beer or brand (optional)
+    :type url: Optional[str]
     :param files: Image files to upload (optional)
     :type files: Optional[List[UploadFile]]
     :returns: Redirect to root beer detail page
@@ -223,6 +226,7 @@ async def create_rootbeer(
         "carbonation_level": carbonation_level,
         "estimated_co2_volumes": float(estimated_co2_volumes) if estimated_co2_volumes else None,
         "notes": notes,
+        "url": url,
         "images": [],  # Always initialize images as empty list
         "created_at": now,
         "updated_at": now,
@@ -337,6 +341,7 @@ async def update_rootbeer(
     carbonation_level: Optional[str] = Form(None),
     estimated_co2_volumes: Optional[float] = Form(None),
     notes: Optional[str] = Form(None),
+    url: Optional[str] = Form(None),
 ) -> RedirectResponse:
     """Update a root beer.
     
@@ -372,6 +377,8 @@ async def update_rootbeer(
     :type estimated_co2_volumes: Optional[float]
     :param notes: Additional notes (optional)
     :type notes: Optional[str]
+    :param url: Website URL for the root beer or brand (optional)
+    :type url: Optional[str]
     :returns: Redirect to root beer detail page
     :rtype: RedirectResponse
     :raises HTTPException: If root beer not found
@@ -406,6 +413,7 @@ async def update_rootbeer(
         "carbonation_level": _normalize(carbonation_level),
         "estimated_co2_volumes": _normalize(estimated_co2_volumes),
         "notes": _normalize(notes),
+        "url": _normalize(url),
     }
 
     # Remove keys that are still None so we only update provided fields.

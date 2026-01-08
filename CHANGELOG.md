@@ -200,6 +200,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CLI Commands Reference**: Added comprehensive `planning/commands.md` with all project CLI commands
   - Package management, testing, development, deployment commands
   - Quick reference for common operations
+- **Root Beer URL Field**: Added optional website URL field to root beer entries
+  - URL field in admin forms (create and edit)
+  - Displays as clickable "Visit Website →" link on public root beer pages
+  - Supports URLs up to 500 characters
+  - Included in JSON import script for bulk imports
+  - Useful for linking to brand websites or product pages
 
 ### Improved
 - **Test Coverage**: Increased from 0% to 76% with comprehensive test suite
