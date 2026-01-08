@@ -140,10 +140,10 @@ class TestRootBeerCRUD:
     ):
         """Test successful root beer update."""
         rootbeer_id = str(sample_rootbeer["_id"])
-        # Use JSON since route expects RootBeerUpdate Pydantic model
+        # Use form data since route expects Form(...) parameters
         response = await authenticated_client.post(
             f"/admin/rootbeers/{rootbeer_id}",
-            json={
+            data={
                 "name": "Updated Root Beer Name",
                 "brand": "Updated Brand",
             },

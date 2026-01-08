@@ -213,6 +213,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optimized test fixtures for performance (collection clearing instead of database dropping)
 
 ### Fixed
+- **Root Beer Update Route**: Fixed update_rootbeer route to accept form data instead of JSON
+  - Changed route to use individual `Form(...)` parameters matching create_rootbeer pattern
+  - Resolves error when updating root beer notes or other fields via admin form
+  - Form now properly submits form-encoded data instead of expecting JSON body
+  - Updated test to use form data instead of JSON
 - **Home Page**: Root beers with reviews now display correctly on homepage
   - Fixed review query to handle both string and ObjectId formats for `root_beer_id` using `$or` query
   - Simplified query logic to use single efficient query instead of multiple fallback attempts

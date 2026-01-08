@@ -130,3 +130,4 @@ class TestPagination:
         assert "sort=name" in url
         assert "page=2" in url
 
+

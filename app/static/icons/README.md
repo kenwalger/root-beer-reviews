@@ -38,3 +38,4 @@ Until you create custom icons, you can use a simple colored square or download a
 
 The app will work without icons, but they're required for a proper PWA installation experience.
 
+

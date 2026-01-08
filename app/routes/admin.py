@@ -7,7 +7,7 @@ admin authentication via the require_admin dependency.
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.database import get_database
-from app.models.rootbeer import RootBeerCreate, RootBeerUpdate
+from app.models.rootbeer import RootBeerCreate
 from app.models.review import ReviewCreate, ReviewUpdate
 from app.models.flavor_note import FlavorNoteCreate
 from app.routes.auth import require_admin
@@ -321,26 +321,93 @@ async def view_rootbeer(
 @router.post("/admin/rootbeers/{rootbeer_id}")
 async def update_rootbeer(
     rootbeer_id: str,
-    rootbeer: RootBeerUpdate,
     request: Request,
-    admin: dict[str, str] = Depends(require_admin)
+    admin: dict[str, str] = Depends(require_admin),
+    name: Optional[str] = Form(None),
+    brand: Optional[str] = Form(None),
+    region: Optional[str] = Form(None),
+    country: Optional[str] = Form(None),
+    ingredients: Optional[str] = Form(None),
+    sweetener_type: Optional[str] = Form(None),
+    sugar_grams_per_serving: Optional[float] = Form(None),
+    caffeine_mg: Optional[float] = Form(None),
+    alcohol_content: Optional[float] = Form(None),
+    color: Optional[str] = Form(None),
+    carbonation_level: Optional[str] = Form(None),
+    estimated_co2_volumes: Optional[float] = Form(None),
+    notes: Optional[str] = Form(None),
 ) -> RedirectResponse:
     """Update a root beer.
     
     :param rootbeer_id: Root beer ID
     :type rootbeer_id: str
-    :param rootbeer: Root beer update data
-    :type rootbeer: RootBeerUpdate
     :param request: FastAPI request object
     :type request: Request
     :param admin: Authenticated admin user information
     :type admin: dict[str, str]
+    :param name: Root beer name (optional)
+    :type name: Optional[str]
+    :param brand: Brand name (optional)
+    :type brand: Optional[str]
+    :param region: Region (optional)
+    :type region: Optional[str]
+    :param country: Country (optional)
+    :type country: Optional[str]
+    :param ingredients: Ingredients list (optional)
+    :type ingredients: Optional[str]
+    :param sweetener_type: Type of sweetener (optional)
+    :type sweetener_type: Optional[str]
+    :param sugar_grams_per_serving: Sugar content in grams (optional)
+    :type sugar_grams_per_serving: Optional[float]
+    :param caffeine_mg: Caffeine content in mg (optional)
+    :type caffeine_mg: Optional[float]
+    :param alcohol_content: Alcohol content percentage (optional)
+    :type alcohol_content: Optional[float]
+    :param color: Color (optional)
+    :type color: Optional[str]
+    :param carbonation_level: Carbonation level (optional)
+    :type carbonation_level: Optional[str]
+    :param estimated_co2_volumes: Estimated CO2 volumes (optional)
+    :type estimated_co2_volumes: Optional[float]
+    :param notes: Additional notes (optional)
+    :type notes: Optional[str]
     :returns: Redirect to root beer detail page
     :rtype: RedirectResponse
     :raises HTTPException: If root beer not found
     """
     db = get_database()
-    update_data = rootbeer.model_dump(exclude_unset=True)
+    
+    # Build update data dictionary, only including fields that were provided
+    update_data: Dict[str, Any] = {}
+    
+    if name is not None:
+        update_data["name"] = name
+    if brand is not None:
+        update_data["brand"] = brand
+    if region is not None:
+        update_data["region"] = region
+    if country is not None:
+        update_data["country"] = country
+    if ingredients is not None:
+        update_data["ingredients"] = ingredients
+    if sweetener_type is not None:
+        update_data["sweetener_type"] = sweetener_type
+    if sugar_grams_per_serving is not None:
+        update_data["sugar_grams_per_serving"] = sugar_grams_per_serving
+    if caffeine_mg is not None:
+        update_data["caffeine_mg"] = caffeine_mg
+    if alcohol_content is not None:
+        update_data["alcohol_content"] = alcohol_content
+    if color is not None:
+        update_data["color"] = color
+    if carbonation_level is not None:
+        update_data["carbonation_level"] = carbonation_level
+    if estimated_co2_volumes is not None:
+        update_data["estimated_co2_volumes"] = estimated_co2_volumes
+    if notes is not None:
+        update_data["notes"] = notes
+    
+    # Always update metadata
     update_data["updated_at"] = datetime.now(UTC)
     update_data["updated_by"] = admin["email"]
     

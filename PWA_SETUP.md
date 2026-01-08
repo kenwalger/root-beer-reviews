@@ -132,3 +132,4 @@ The app needs icon files for proper PWA installation. Currently, placeholder pat
 - [Web.dev PWA Checklist](https://web.dev/pwa-checklist/)
 - [PWA Builder](https://www.pwabuilder.com/) - Tools and testing
 
+
