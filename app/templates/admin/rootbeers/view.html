@@ -72,6 +72,12 @@
             <label for="estimated_co2_volumes" class="block text-sm font-medium mb-2">Estimated CO₂ Volumes</label>
             <input type="number" id="estimated_co2_volumes" name="estimated_co2_volumes" value="{{ rootbeer.estimated_co2_volumes or '' }}" step="0.1" min="0" max="10" class="form-input">
         </div>
+        
+        <div>
+            <label for="url" class="block text-sm font-medium mb-2">Website URL</label>
+            <input type="url" id="url" name="url" value="{{ rootbeer.url or '' }}" placeholder="https://example.com" class="form-input">
+            <p class="text-xs text-gray-500 mt-1">Link to brand website or product page</p>
+        </div>
     </div>
     
     <div>

@@ -164,6 +164,7 @@ async def create_rootbeer(
     carbonation_level: Optional[str] = Form(None),
     estimated_co2_volumes: Optional[float] = Form(None),
     notes: Optional[str] = Form(None),
+    url: Optional[str] = Form(None),
     files: Optional[List[UploadFile]] = File(None),
 ) -> RedirectResponse:
     """Create a new root beer.
@@ -200,6 +201,8 @@ async def create_rootbeer(
     :type estimated_co2_volumes: Optional[float]
     :param notes: Additional notes (optional)
     :type notes: Optional[str]
+    :param url: Website URL for the root beer or brand (optional)
+    :type url: Optional[str]
     :param files: Image files to upload (optional)
     :type files: Optional[List[UploadFile]]
     :returns: Redirect to root beer detail page
@@ -209,7 +212,8 @@ async def create_rootbeer(
     db = get_database()
     now = datetime.now(UTC)
     
-    rootbeer_dict = {
+    # Build root beer data dictionary
+    rootbeer_data = {
         "name": name,
         "brand": brand,
         "region": region,
@@ -223,15 +227,29 @@ async def create_rootbeer(
         "carbonation_level": carbonation_level,
         "estimated_co2_volumes": float(estimated_co2_volumes) if estimated_co2_volumes else None,
         "notes": notes,
-        "images": [],  # Always initialize images as empty list
-        "created_at": now,
-        "updated_at": now,
-        "created_by": admin["email"],
-        "updated_by": admin["email"],
+        "url": url,
     }
     
-    # Remove None values (but keep images even if empty)
-    rootbeer_dict = {k: v for k, v in rootbeer_dict.items() if v is not None or k == "images"}
+    # Remove None values
+    rootbeer_data = {k: v for k, v in rootbeer_data.items() if v is not None}
+    
+    # Validate using Pydantic model (validates URL protocol, field constraints, etc.)
+    try:
+        rootbeer_create = RootBeerCreate(**rootbeer_data)
+        rootbeer_dict = rootbeer_create.model_dump(exclude_unset=True)
+    except ValidationError as e:
+        # Convert Pydantic validation errors to HTTP 422
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=e.errors()
+        )
+    
+    # Add metadata and images
+    rootbeer_dict["images"] = []  # Always initialize images as empty list
+    rootbeer_dict["created_at"] = now
+    rootbeer_dict["updated_at"] = now
+    rootbeer_dict["created_by"] = admin["email"]
+    rootbeer_dict["updated_by"] = admin["email"]
     
     result = await db.rootbeers.insert_one(rootbeer_dict)
     rootbeer_id = str(result.inserted_id)
@@ -337,6 +355,7 @@ async def update_rootbeer(
     carbonation_level: Optional[str] = Form(None),
     estimated_co2_volumes: Optional[float] = Form(None),
     notes: Optional[str] = Form(None),
+    url: Optional[str] = Form(None),
 ) -> RedirectResponse:
     """Update a root beer.
     
@@ -372,6 +391,8 @@ async def update_rootbeer(
     :type estimated_co2_volumes: Optional[float]
     :param notes: Additional notes (optional)
     :type notes: Optional[str]
+    :param url: Website URL for the root beer or brand (optional)
+    :type url: Optional[str]
     :returns: Redirect to root beer detail page
     :rtype: RedirectResponse
     :raises HTTPException: If root beer not found
@@ -406,6 +427,7 @@ async def update_rootbeer(
         "carbonation_level": _normalize(carbonation_level),
         "estimated_co2_volumes": _normalize(estimated_co2_volumes),
         "notes": _normalize(notes),
+        "url": _normalize(url),
     }
 
     # Remove keys that are still None so we only update provided fields.

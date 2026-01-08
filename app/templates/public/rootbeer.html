@@ -8,6 +8,14 @@
     {% if rootbeer.region or rootbeer.country %}
     <p class="text-gray-500">{{ rootbeer.region or rootbeer.country }}</p>
     {% endif %}
+    {% if rootbeer.url %}
+    <p class="mt-2">
+        <a href="{{ rootbeer.url|string }}" target="_blank" rel="noopener noreferrer" 
+           class="text-blue-600 hover:text-blue-800 underline">
+            Visit Website →
+        </a>
+    </p>
+    {% endif %}
 </div>
 
 <!-- Images Section -->
