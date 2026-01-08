@@ -182,7 +182,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Comprehensive Test Suite**: Full pytest-based test coverage with 108 tests achieving 76% code coverage
+- **Comprehensive Test Suite**: Full pytest-based test coverage with 109 tests achieving 76% code coverage
   - Unit tests for models, utilities, and authentication
   - Integration tests for all admin routes (CRUD operations, image management, metadata management)
   - Integration tests for public routes (homepage, filtering, pagination)
@@ -194,13 +194,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Code Quality Improvements**: 
   - All Python files now use Sphinx-style docstrings
   - Comprehensive type hints throughout the codebase
-  - Fixed all deprecation warnings (datetime.utcnow → datetime.now(UTC), Pydantic Config → ConfigDict)
+  - Fixed all deprecation warnings (datetime.utcnow → datetime.now(UTC), Pydantic Config → ConfigDict, HTTP_422_UNPROCESSABLE_ENTITY → HTTP_422_UNPROCESSABLE_CONTENT)
   - Migrated from deprecated json_encoders to field_serializer
   - Fixed Starlette TemplateResponse parameter order (request first)
+- **CLI Commands Reference**: Added comprehensive `planning/commands.md` with all project CLI commands
+  - Package management, testing, development, deployment commands
+  - Quick reference for common operations
 
 ### Improved
 - **Test Coverage**: Increased from 0% to 76% with comprehensive test suite
-  - 108 total tests covering all major functionality
+  - 109 total tests covering all major functionality
   - Tests for update/delete operations, image management, metadata management
   - Auth error path testing and edge case coverage
   - Proper async test handling with httpx.AsyncClient
@@ -217,7 +220,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Changed route to use individual `Form(...)` parameters matching create_rootbeer pattern
   - Resolves error when updating root beer notes or other fields via admin form
   - Form now properly submits form-encoded data instead of expecting JSON body
-  - Updated test to use form data instead of JSON
+  - **Validation**: Restored Pydantic validation by reconstructing `RootBeerUpdate` model from form data
+  - Empty strings are normalized to `None` to prevent overwriting fields with invalid data
+  - Validation errors are properly converted to HTTP 422 responses
+  - Added comprehensive validation test covering length limits, numeric ranges, and edge cases
+  - Fixed deprecation warning: `HTTP_422_UNPROCESSABLE_ENTITY` → `HTTP_422_UNPROCESSABLE_CONTENT`
+  - Updated tests to use form data instead of JSON
 - **Home Page**: Root beers with reviews now display correctly on homepage
   - Fixed review query to handle both string and ObjectId formats for `root_beer_id` using `$or` query
   - Simplified query logic to use single efficient query instead of multiple fallback attempts

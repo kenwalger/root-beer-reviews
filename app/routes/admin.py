@@ -6,8 +6,9 @@ admin authentication via the require_admin dependency.
 """
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
+from pydantic import ValidationError
 from app.database import get_database
-from app.models.rootbeer import RootBeerCreate
+from app.models.rootbeer import RootBeerCreate, RootBeerUpdate
 from app.models.review import ReviewCreate, ReviewUpdate
 from app.models.flavor_note import FlavorNoteCreate
 from app.routes.auth import require_admin
@@ -376,41 +377,59 @@ async def update_rootbeer(
     :raises HTTPException: If root beer not found
     """
     db = get_database()
-    
-    # Build update data dictionary, only including fields that were provided
-    update_data: Dict[str, Any] = {}
-    
-    if name is not None:
-        update_data["name"] = name
-    if brand is not None:
-        update_data["brand"] = brand
-    if region is not None:
-        update_data["region"] = region
-    if country is not None:
-        update_data["country"] = country
-    if ingredients is not None:
-        update_data["ingredients"] = ingredients
-    if sweetener_type is not None:
-        update_data["sweetener_type"] = sweetener_type
-    if sugar_grams_per_serving is not None:
-        update_data["sugar_grams_per_serving"] = sugar_grams_per_serving
-    if caffeine_mg is not None:
-        update_data["caffeine_mg"] = caffeine_mg
-    if alcohol_content is not None:
-        update_data["alcohol_content"] = alcohol_content
-    if color is not None:
-        update_data["color"] = color
-    if carbonation_level is not None:
-        update_data["carbonation_level"] = carbonation_level
-    if estimated_co2_volumes is not None:
-        update_data["estimated_co2_volumes"] = estimated_co2_volumes
-    if notes is not None:
-        update_data["notes"] = notes
-    
+
+    # Normalize form inputs: treat empty strings as missing values so they
+    # don't overwrite existing fields with invalid/empty data. This preserves
+    # the original behavior where omitted fields are left unchanged.
+    def _normalize(value: Any) -> Any:
+        """Normalize form value.
+
+        Empty strings are converted to ``None`` so that optional fields are
+        treated as unset and do not bypass Pydantic validation by storing
+        empty strings.
+        """
+        if isinstance(value, str) and value.strip() == "":
+            return None
+        return value
+
+    raw_data: Dict[str, Any] = {
+        "name": _normalize(name),
+        "brand": _normalize(brand),
+        "region": _normalize(region),
+        "country": _normalize(country),
+        "ingredients": _normalize(ingredients),
+        "sweetener_type": _normalize(sweetener_type),
+        "sugar_grams_per_serving": _normalize(sugar_grams_per_serving),
+        "caffeine_mg": _normalize(caffeine_mg),
+        "alcohol_content": _normalize(alcohol_content),
+        "color": _normalize(color),
+        "carbonation_level": _normalize(carbonation_level),
+        "estimated_co2_volumes": _normalize(estimated_co2_volumes),
+        "notes": _normalize(notes),
+    }
+
+    # Remove keys that are still None so we only update provided fields.
+    cleaned_data: Dict[str, Any] = {
+        key: value for key, value in raw_data.items() if value is not None
+    }
+
+    # Reuse Pydantic validation logic from RootBeerUpdate so field constraints
+    # (lengths, ranges, types) are still enforced even though the route
+    # accepts form-encoded data.
+    try:
+        rootbeer_update = RootBeerUpdate(**cleaned_data)
+        update_data = rootbeer_update.model_dump(exclude_unset=True)
+    except ValidationError as e:
+        # Convert Pydantic validation errors to HTTP 422 (same as FastAPI would)
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=e.errors()
+        )
+
     # Always update metadata
     update_data["updated_at"] = datetime.now(UTC)
     update_data["updated_by"] = admin["email"]
-    
+
     result = await db.rootbeers.update_one(
         {"_id": ObjectId(rootbeer_id)},
         {"$set": update_data}

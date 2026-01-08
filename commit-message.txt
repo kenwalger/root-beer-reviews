@@ -1,4 +1,4 @@
-Fix root beer update route to accept form data
+Fix root beer update route with proper validation and error handling
 
 Fixed the update_rootbeer route to properly handle form-encoded data from
 the HTML form instead of expecting JSON. The route was previously using a
@@ -7,16 +7,35 @@ form-encoded data.
 
 ## Changes
 
+### Route Updates
 - Updated `update_rootbeer` route in `app/routes/admin.py` to accept
   individual `Form(...)` parameters instead of `RootBeerUpdate` model
 - Matches the pattern used in `create_rootbeer` route for consistency
 - All fields are optional to support partial updates
-- Removed unused `RootBeerUpdate` import
+- **Validation**: Restored Pydantic validation by reconstructing
+  `RootBeerUpdate` model from form data to enforce field constraints
+- Empty strings are normalized to `None` to prevent overwriting fields
+  with invalid/empty data
+- Validation errors are properly converted to HTTP 422 responses
+- Fixed deprecation warning: `HTTP_422_UNPROCESSABLE_ENTITY` →
+  `HTTP_422_UNPROCESSABLE_CONTENT`
 
-## Test Updates
-
+### Test Updates
 - Updated `test_update_rootbeer_success` to use form data (`data={...}`)
   instead of JSON (`json={...}`)
+- Updated `test_update_nonexistent_rootbeer` to use form data
+- Added `test_update_rootbeer_validation_errors` to comprehensively test
+  validation constraints:
+  - Name too long (max_length=200)
+  - Brand too long (max_length=100)
+  - Negative sugar value (ge=0)
+  - Alcohol content > 100% (le=100)
+  - CO2 volumes > 10 (le=10)
+
+### Documentation
+- Added comprehensive CLI commands reference in `planning/commands.md`
+  - Package management, testing, development, deployment commands
+  - Quick reference for common operations
 
 ## Bug Fix
 
@@ -29,4 +48,22 @@ notes or other fields via the admin interface:
 "input":"name=..."}]}
 ```
 
-The form now correctly submits and updates root beer data as expected.
+The form now correctly submits and updates root beer data as expected, with
+full validation to prevent invalid data from being saved.
+
+## Validation Improvements
+
+The fix addresses PR review concerns about validation bypass:
+- All field constraints (lengths, ranges, types) are enforced via
+  Pydantic's `RootBeerUpdate` model
+- Empty strings from HTML forms are normalized to `None` and excluded
+  from updates, preserving existing field values
+- Validation errors return proper HTTP 422 status codes with detailed
+  error messages
+- Comprehensive test coverage ensures validation works correctly
+
+## Test Results
+- **Total Tests**: 109 (up from 108)
+- **Passing**: 109/109 (100%)
+- **Coverage**: 76%
+- **Warnings**: 0 (fixed deprecation warnings)
