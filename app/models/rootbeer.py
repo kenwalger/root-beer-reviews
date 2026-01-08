@@ -3,7 +3,7 @@
 This module defines Pydantic models for root beer entities, including
 base schemas, creation/update schemas, and the full model with metadata.
 """
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, HttpUrl
 from typing import Optional, List
 from bson import ObjectId
 from app.models.metadata import Metadata
@@ -28,7 +28,7 @@ class RootBeerBase(BaseModel):
     carbonation_level: Optional[str] = Field(None, max_length=20)  # "low", "medium", "high"
     estimated_co2_volumes: Optional[float] = Field(None, ge=0, le=10)  # Optional CO2 volumes
     notes: Optional[str] = None
-    url: Optional[str] = Field(None, max_length=500, description="Website URL for the root beer or brand")
+    url: Optional[HttpUrl] = Field(None, description="Website URL for the root beer or brand (must be http:// or https://)")
     images: Optional[List[str]] = Field(None, description="List of S3 image URLs")
     primary_image: Optional[str] = Field(None, description="URL of primary/featured image")
 
@@ -61,7 +61,7 @@ class RootBeerUpdate(BaseModel):
     carbonation_level: Optional[str] = Field(None, max_length=20)
     estimated_co2_volumes: Optional[float] = Field(None, ge=0, le=10)
     notes: Optional[str] = None
-    url: Optional[str] = Field(None, max_length=500)
+    url: Optional[HttpUrl] = Field(None, description="Website URL (must be http:// or https://)")
 
 
 class RootBeer(RootBeerBase, Metadata):

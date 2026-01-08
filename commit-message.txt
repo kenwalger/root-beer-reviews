@@ -1,19 +1,30 @@
-Add URL field to root beer entries
+Add URL field to root beer entries with protocol validation
 
 Added an optional website URL field to root beer entries, allowing admins
 to link to brand websites or product pages. The URL is displayed as a
 clickable link on public root beer pages.
 
+**Security**: Uses Pydantic's `HttpUrl` type to validate URLs and prevent
+XSS attacks by only allowing http:// and https:// protocols. Malicious
+protocols like javascript: and data: are automatically rejected.
+
 ## Changes
 
 ### Model Updates
-- Added `url: Optional[str]` field to `RootBeerBase` model (max_length=500)
-- Added `url: Optional[str]` field to `RootBeerUpdate` model
+- Added `url: Optional[HttpUrl]` field to `RootBeerBase` model
+- Added `url: Optional[HttpUrl]` field to `RootBeerUpdate` model
 - Field is optional and can be left empty
+- **Security**: HttpUrl type validates protocol, only allowing http:// and https://
+  - Prevents XSS attacks via javascript: and data: protocols
+  - Automatically rejects invalid or malicious URLs
 
 ### Route Updates
 - Added `url: Optional[str] = Form(None)` parameter to `create_rootbeer` route
 - Added `url: Optional[str] = Form(None)` parameter to `update_rootbeer` route
+- **Security**: Both routes now validate URLs using Pydantic models
+  - `create_rootbeer` validates entire root beer data using `RootBeerCreate` model
+  - `update_rootbeer` validates using `RootBeerUpdate` model (already implemented)
+  - Invalid URLs (including malicious protocols) return HTTP 422 errors
 - URL field is normalized (empty strings converted to None) in update route
 - Updated route docstrings to document the new parameter
 
@@ -30,10 +41,16 @@ clickable link on public root beer pages.
 ## Features
 
 - **Optional Field**: URL is not required, can be left empty
-- **URL Validation**: Uses HTML5 `type="url"` input for basic validation
+- **Security**: Protocol validation using Pydantic's `HttpUrl` type
+  - Only allows http:// and https:// protocols
+  - Automatically rejects javascript:, data:, and other malicious protocols
+  - Prevents XSS attacks through URL injection
+- **Client-Side Validation**: Uses HTML5 `type="url"` input for user experience
+- **Server-Side Validation**: Pydantic models validate URLs before storage
 - **Public Display**: Shows as clickable link on public root beer pages
+  - Uses `target="_blank"` and `rel="noopener noreferrer"` for security
 - **Import Support**: Can be included in JSON import files for bulk operations
-- **Max Length**: 500 characters to accommodate long URLs
+- **Error Handling**: Invalid URLs return HTTP 422 with detailed error messages
 
 ## Use Cases
 

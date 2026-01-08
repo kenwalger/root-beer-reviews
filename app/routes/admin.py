@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request, Form, Fi
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import ValidationError
 from app.database import get_database
-from app.models.rootbeer import RootBeerCreate, RootBeerUpdate
+from app.models.rootbeer import RootBeerCreate, RootBeerUpdate, RootBeerUpdate
 from app.models.review import ReviewCreate, ReviewUpdate
 from app.models.flavor_note import FlavorNoteCreate
 from app.routes.auth import require_admin
@@ -212,7 +212,8 @@ async def create_rootbeer(
     db = get_database()
     now = datetime.now(UTC)
     
-    rootbeer_dict = {
+    # Build root beer data dictionary
+    rootbeer_data = {
         "name": name,
         "brand": brand,
         "region": region,
@@ -227,15 +228,28 @@ async def create_rootbeer(
         "estimated_co2_volumes": float(estimated_co2_volumes) if estimated_co2_volumes else None,
         "notes": notes,
         "url": url,
-        "images": [],  # Always initialize images as empty list
-        "created_at": now,
-        "updated_at": now,
-        "created_by": admin["email"],
-        "updated_by": admin["email"],
     }
     
-    # Remove None values (but keep images even if empty)
-    rootbeer_dict = {k: v for k, v in rootbeer_dict.items() if v is not None or k == "images"}
+    # Remove None values
+    rootbeer_data = {k: v for k, v in rootbeer_data.items() if v is not None}
+    
+    # Validate using Pydantic model (validates URL protocol, field constraints, etc.)
+    try:
+        rootbeer_create = RootBeerCreate(**rootbeer_data)
+        rootbeer_dict = rootbeer_create.model_dump(exclude_unset=True)
+    except ValidationError as e:
+        # Convert Pydantic validation errors to HTTP 422
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=e.errors()
+        )
+    
+    # Add metadata and images
+    rootbeer_dict["images"] = []  # Always initialize images as empty list
+    rootbeer_dict["created_at"] = now
+    rootbeer_dict["updated_at"] = now
+    rootbeer_dict["created_by"] = admin["email"]
+    rootbeer_dict["updated_by"] = admin["email"]
     
     result = await db.rootbeers.insert_one(rootbeer_dict)
     rootbeer_id = str(result.inserted_id)

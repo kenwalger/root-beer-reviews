@@ -203,7 +203,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Root Beer URL Field**: Added optional website URL field to root beer entries
   - URL field in admin forms (create and edit)
   - Displays as clickable "Visit Website →" link on public root beer pages
-  - Supports URLs up to 500 characters
+  - **Security**: Uses Pydantic's `HttpUrl` type to validate URLs and prevent XSS attacks
+    - Only allows http:// and https:// protocols
+    - Automatically rejects malicious protocols (javascript:, data:, etc.)
+    - Validates URLs in both create and update routes
   - Included in JSON import script for bulk imports
   - Useful for linking to brand websites or product pages
 
