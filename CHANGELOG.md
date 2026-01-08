@@ -208,6 +208,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Automatically rejects malicious protocols (javascript:, data:, etc.)
     - Validates URLs in both create and update routes
   - Included in JSON import script for bulk imports
+    - Import script validates URLs using Pydantic models (prevents security bypass)
+    - Malicious URLs in JSON files are rejected during import
   - Useful for linking to brand websites or product pages
 
 ### Improved

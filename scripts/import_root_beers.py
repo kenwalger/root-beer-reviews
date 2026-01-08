@@ -23,6 +23,8 @@ import argparse
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.database import connect_to_mongo, close_mongo_connection, get_database
+from app.models.rootbeer import RootBeerCreate
+from pydantic import ValidationError
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -97,22 +99,34 @@ async def import_root_beers(
                 skipped += 1
                 continue
         
-        root_beer_dict = {
+        # Build root beer data dictionary (without metadata)
+        root_beer_data = {
             "name": name,
             "brand": brand,
             "region": region,
             "country": country,
             "notes": notes,
             "url": url,
-            "images": [],
-            "created_at": now,
-            "updated_at": now,
-            "created_by": "import_script",
-            "updated_by": "import_script",
         }
         
-        # Remove None values (but keep images)
-        root_beer_dict = {k: v for k, v in root_beer_dict.items() if v is not None or k == "images"}
+        # Remove None values
+        root_beer_data = {k: v for k, v in root_beer_data.items() if v is not None}
+        
+        # Validate using Pydantic model (validates URL protocol, field constraints, etc.)
+        try:
+            root_beer_create = RootBeerCreate(**root_beer_data)
+            root_beer_dict = root_beer_create.model_dump(exclude_unset=True)
+        except ValidationError as e:
+            print(f"❌ Validation error for {name}: {e.errors()}")
+            errors += 1
+            continue
+        
+        # Add metadata and images
+        root_beer_dict["images"] = []
+        root_beer_dict["created_at"] = now
+        root_beer_dict["updated_at"] = now
+        root_beer_dict["created_by"] = "import_script"
+        root_beer_dict["updated_by"] = "import_script"
         
         if dry_run:
             print(f"📝 Would import: {name} ({brand})")

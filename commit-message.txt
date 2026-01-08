@@ -36,6 +36,11 @@ protocols like javascript: and data: are automatically rejected.
 
 ### Import Script
 - Updated `scripts/import_root_beers.py` to handle `url` field from JSON import files
+- **Security**: Import script now validates URLs using `RootBeerCreate` Pydantic model
+  - Prevents malicious URLs from being imported via JSON files
+  - Validates URL protocol (only http:// and https:// allowed)
+  - Invalid URLs are rejected with detailed error messages
+  - Maintains same security standards as admin routes
 - URLs can now be included in bulk import operations
 
 ## Features

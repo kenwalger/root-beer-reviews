@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request, Form, Fi
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import ValidationError
 from app.database import get_database
-from app.models.rootbeer import RootBeerCreate, RootBeerUpdate, RootBeerUpdate
+from app.models.rootbeer import RootBeerCreate, RootBeerUpdate
 from app.models.review import ReviewCreate, ReviewUpdate
 from app.models.flavor_note import FlavorNoteCreate
 from app.routes.auth import require_admin
