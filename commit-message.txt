@@ -1,67 +1,69 @@
-Add comprehensive test suite with 76% code coverage
+Fix root beer update route with proper validation and error handling
 
-This PR adds a full pytest-based test suite with 108 tests covering all major functionality, achieving 76% code coverage. The test suite includes unit tests, integration tests, and proper async handling.
+Fixed the update_rootbeer route to properly handle form-encoded data from
+the HTML form instead of expecting JSON. The route was previously using a
+Pydantic model which FastAPI parsed from JSON, but the admin form submits
+form-encoded data.
 
-## Test Coverage
+## Changes
 
-### Test Suite Overview
-- **Total Tests**: 108 tests (all new for this PR)
-- **Unit Tests**: Models, utilities, authentication
-- **Integration Tests**: All admin routes, public routes, auth flows
-- **Coverage**: 76% code coverage (up from 0%)
+### Route Updates
+- Updated `update_rootbeer` route in `app/routes/admin.py` to accept
+  individual `Form(...)` parameters instead of `RootBeerUpdate` model
+- Matches the pattern used in `create_rootbeer` route for consistency
+- All fields are optional to support partial updates
+- **Validation**: Restored Pydantic validation by reconstructing
+  `RootBeerUpdate` model from form data to enforce field constraints
+- Empty strings are normalized to `None` to prevent overwriting fields
+  with invalid/empty data
+- Validation errors are properly converted to HTTP 422 responses
+- Fixed deprecation warning: `HTTP_422_UNPROCESSABLE_ENTITY` →
+  `HTTP_422_UNPROCESSABLE_CONTENT`
 
-### Test Categories Added
-- **Admin CRUD Operations**: Create, read, update, delete tests for root beers and reviews
-- **Image Management**: Upload, delete, and set primary image tests (with S3 mocking)
-- **Flavor Note Management**: List, create, and delete tests
-- **Metadata Management**: Colors and serving contexts CRUD tests
-- **Admin Account Management**: Password change with validation tests
-- **Auth Error Paths**: Invalid token handling and exception testing
-- **Public Routes**: Homepage, filtering, pagination, public views
-- **Model Validation**: Pydantic model tests with edge cases
-
-### Test Infrastructure
-- Set up pytest with httpx.AsyncClient for proper async testing
-- Test fixtures for database, admin users, and sample data
-- MongoDB Atlas integration with separate test database
-- S3 mocking for image upload tests
-- Coverage reporting with HTML output
-
-## Code Quality Improvements
+### Test Updates
+- Updated `test_update_rootbeer_success` to use form data (`data={...}`)
+  instead of JSON (`json={...}`)
+- Updated `test_update_nonexistent_rootbeer` to use form data
+- Added `test_update_rootbeer_validation_errors` to comprehensively test
+  validation constraints:
+  - Name too long (max_length=200)
+  - Brand too long (max_length=100)
+  - Negative sugar value (ge=0)
+  - Alcohol content > 100% (le=100)
+  - CO2 volumes > 10 (le=10)
 
 ### Documentation
-- All Python files now use Sphinx-style docstrings
-- Comprehensive type hints throughout the codebase
-- Function and class documentation with parameter descriptions
+- Added comprehensive CLI commands reference in `planning/commands.md`
+  - Package management, testing, development, deployment commands
+  - Quick reference for common operations
 
-### Deprecation Fixes
-- Replaced all `datetime.utcnow()` with `datetime.now(UTC)`
-- Migrated Pydantic `class Config` to `model_config = ConfigDict(...)`
-- Replaced deprecated `json_encoders` with `field_serializer`
-- Fixed Starlette `TemplateResponse` parameter order (request first)
+## Bug Fix
 
-### Route Fixes
-- Fixed `create_color` and `create_serving_context` routes to properly use `Form(...)` for form data
-- Removed unused `request` parameter from metadata routes
+This resolves the error users encountered when trying to update root beer
+notes or other fields via the admin interface:
+
+```
+{"detail":[{"type":"model_attributes_type","loc":["body"],
+"msg":"Input should be a valid dictionary or object to extract fields from",
+"input":"name=..."}]}
+```
+
+The form now correctly submits and updates root beer data as expected, with
+full validation to prevent invalid data from being saved.
+
+## Validation Improvements
+
+The fix addresses PR review concerns about validation bypass:
+- All field constraints (lengths, ranges, types) are enforced via
+  Pydantic's `RootBeerUpdate` model
+- Empty strings from HTML forms are normalized to `None` and excluded
+  from updates, preserving existing field values
+- Validation errors return proper HTTP 422 status codes with detailed
+  error messages
+- Comprehensive test coverage ensures validation works correctly
 
 ## Test Results
-- **Total Tests**: 108 (all new for this PR)
-- **Passing**: 108/108 (100%)
-- **Coverage**: 76% (up from 0%)
-- **Test Categories**: Unit, integration, auth, admin, public, db, s3
-
-## Files Changed
-- Added comprehensive test files: `tests/test_admin_routes.py`, `tests/test_auth.py`, `tests/test_models.py`, `tests/test_public_routes.py`, `tests/test_utils.py`
-- Updated `tests/conftest.py` with optimized fixtures
-- Added test dependencies to `pyproject.toml`
-- Updated all Python files with Sphinx docstrings and type hints
-- Fixed deprecation warnings across the codebase
-
-## Documentation Updates
-- Updated `CHANGELOG.md` with test suite details
-- Updated `README.md` with testing section
-- Updated `ROADMAP.md` to mark test suite as completed
-- Added `tests/README.md` with testing documentation
-
-This comprehensive test suite ensures reliability, prevents regressions, and provides confidence for future development.
-
+- **Total Tests**: 109 (up from 108)
+- **Passing**: 109/109 (100%)
+- **Coverage**: 76%
+- **Warnings**: 0 (fixed deprecation warnings)

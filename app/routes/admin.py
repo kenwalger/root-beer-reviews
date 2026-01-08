@@ -6,6 +6,7 @@ admin authentication via the require_admin dependency.
 """
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
+from pydantic import ValidationError
 from app.database import get_database
 from app.models.rootbeer import RootBeerCreate, RootBeerUpdate
 from app.models.review import ReviewCreate, ReviewUpdate
@@ -321,29 +322,114 @@ async def view_rootbeer(
 @router.post("/admin/rootbeers/{rootbeer_id}")
 async def update_rootbeer(
     rootbeer_id: str,
-    rootbeer: RootBeerUpdate,
     request: Request,
-    admin: dict[str, str] = Depends(require_admin)
+    admin: dict[str, str] = Depends(require_admin),
+    name: Optional[str] = Form(None),
+    brand: Optional[str] = Form(None),
+    region: Optional[str] = Form(None),
+    country: Optional[str] = Form(None),
+    ingredients: Optional[str] = Form(None),
+    sweetener_type: Optional[str] = Form(None),
+    sugar_grams_per_serving: Optional[float] = Form(None),
+    caffeine_mg: Optional[float] = Form(None),
+    alcohol_content: Optional[float] = Form(None),
+    color: Optional[str] = Form(None),
+    carbonation_level: Optional[str] = Form(None),
+    estimated_co2_volumes: Optional[float] = Form(None),
+    notes: Optional[str] = Form(None),
 ) -> RedirectResponse:
     """Update a root beer.
     
     :param rootbeer_id: Root beer ID
     :type rootbeer_id: str
-    :param rootbeer: Root beer update data
-    :type rootbeer: RootBeerUpdate
     :param request: FastAPI request object
     :type request: Request
     :param admin: Authenticated admin user information
     :type admin: dict[str, str]
+    :param name: Root beer name (optional)
+    :type name: Optional[str]
+    :param brand: Brand name (optional)
+    :type brand: Optional[str]
+    :param region: Region (optional)
+    :type region: Optional[str]
+    :param country: Country (optional)
+    :type country: Optional[str]
+    :param ingredients: Ingredients list (optional)
+    :type ingredients: Optional[str]
+    :param sweetener_type: Type of sweetener (optional)
+    :type sweetener_type: Optional[str]
+    :param sugar_grams_per_serving: Sugar content in grams (optional)
+    :type sugar_grams_per_serving: Optional[float]
+    :param caffeine_mg: Caffeine content in mg (optional)
+    :type caffeine_mg: Optional[float]
+    :param alcohol_content: Alcohol content percentage (optional)
+    :type alcohol_content: Optional[float]
+    :param color: Color (optional)
+    :type color: Optional[str]
+    :param carbonation_level: Carbonation level (optional)
+    :type carbonation_level: Optional[str]
+    :param estimated_co2_volumes: Estimated CO2 volumes (optional)
+    :type estimated_co2_volumes: Optional[float]
+    :param notes: Additional notes (optional)
+    :type notes: Optional[str]
     :returns: Redirect to root beer detail page
     :rtype: RedirectResponse
     :raises HTTPException: If root beer not found
     """
     db = get_database()
-    update_data = rootbeer.model_dump(exclude_unset=True)
+
+    # Normalize form inputs: treat empty strings as missing values so they
+    # don't overwrite existing fields with invalid/empty data. This preserves
+    # the original behavior where omitted fields are left unchanged.
+    def _normalize(value: Any) -> Any:
+        """Normalize form value.
+
+        Empty strings are converted to ``None`` so that optional fields are
+        treated as unset and do not bypass Pydantic validation by storing
+        empty strings.
+        """
+        if isinstance(value, str) and value.strip() == "":
+            return None
+        return value
+
+    raw_data: Dict[str, Any] = {
+        "name": _normalize(name),
+        "brand": _normalize(brand),
+        "region": _normalize(region),
+        "country": _normalize(country),
+        "ingredients": _normalize(ingredients),
+        "sweetener_type": _normalize(sweetener_type),
+        "sugar_grams_per_serving": _normalize(sugar_grams_per_serving),
+        "caffeine_mg": _normalize(caffeine_mg),
+        "alcohol_content": _normalize(alcohol_content),
+        "color": _normalize(color),
+        "carbonation_level": _normalize(carbonation_level),
+        "estimated_co2_volumes": _normalize(estimated_co2_volumes),
+        "notes": _normalize(notes),
+    }
+
+    # Remove keys that are still None so we only update provided fields.
+    cleaned_data: Dict[str, Any] = {
+        key: value for key, value in raw_data.items() if value is not None
+    }
+
+    # Reuse Pydantic validation logic from RootBeerUpdate so field constraints
+    # (lengths, ranges, types) are still enforced even though the route
+    # accepts form-encoded data.
+    try:
+        rootbeer_update = RootBeerUpdate(**cleaned_data)
+        update_data = rootbeer_update.model_dump(exclude_unset=True)
+    except ValidationError as e:
+        # Convert Pydantic validation errors to HTTP 422 (same as FastAPI would)
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=e.errors()
+        )
+
+    # Always update metadata
     update_data["updated_at"] = datetime.now(UTC)
     update_data["updated_by"] = admin["email"]
-    
+
     result = await db.rootbeers.update_one(
         {"_id": ObjectId(rootbeer_id)},
         {"$set": update_data}

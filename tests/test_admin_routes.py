@@ -140,10 +140,10 @@ class TestRootBeerCRUD:
     ):
         """Test successful root beer update."""
         rootbeer_id = str(sample_rootbeer["_id"])
-        # Use JSON since route expects RootBeerUpdate Pydantic model
+        # Use form data since route expects Form(...) parameters
         response = await authenticated_client.post(
             f"/admin/rootbeers/{rootbeer_id}",
-            json={
+            data={
                 "name": "Updated Root Beer Name",
                 "brand": "Updated Brand",
             },
@@ -167,11 +167,71 @@ class TestRootBeerCRUD:
         fake_id = str(ObjectId())
         response = await authenticated_client.post(
             f"/admin/rootbeers/{fake_id}",
-            json={"name": "Test"},
+            data={"name": "Test"},
             follow_redirects=False,
         )
         
         assert response.status_code == status.HTTP_404_NOT_FOUND
+    
+    @pytest.mark.asyncio
+    async def test_update_rootbeer_validation_errors(
+        self,
+        authenticated_client: AsyncClient,
+        sample_rootbeer: dict,
+    ):
+        """Test that validation errors are properly handled for invalid form data."""
+        rootbeer_id = str(sample_rootbeer["_id"])
+        
+        # Test empty name (should fail min_length=1)
+        response = await authenticated_client.post(
+            f"/admin/rootbeers/{rootbeer_id}",
+            data={"name": ""},  # Empty string
+            follow_redirects=False,
+        )
+        # Empty strings are normalized to None and excluded, so this should succeed
+        # (field is not updated). But let's test actual validation violations.
+        
+        # Test name too long (max_length=200)
+        long_name = "a" * 201
+        response = await authenticated_client.post(
+            f"/admin/rootbeers/{rootbeer_id}",
+            data={"name": long_name},
+            follow_redirects=False,
+        )
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+        
+        # Test brand too long (max_length=100)
+        long_brand = "b" * 101
+        response = await authenticated_client.post(
+            f"/admin/rootbeers/{rootbeer_id}",
+            data={"brand": long_brand},
+            follow_redirects=False,
+        )
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+        
+        # Test negative sugar value (ge=0)
+        response = await authenticated_client.post(
+            f"/admin/rootbeers/{rootbeer_id}",
+            data={"sugar_grams_per_serving": "-5.0"},
+            follow_redirects=False,
+        )
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+        
+        # Test alcohol content > 100% (le=100)
+        response = await authenticated_client.post(
+            f"/admin/rootbeers/{rootbeer_id}",
+            data={"alcohol_content": "101.0"},
+            follow_redirects=False,
+        )
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+        
+        # Test CO2 volumes > 10 (le=10)
+        response = await authenticated_client.post(
+            f"/admin/rootbeers/{rootbeer_id}",
+            data={"estimated_co2_volumes": "11.0"},
+            follow_redirects=False,
+        )
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
     
     @pytest.mark.asyncio
     async def test_delete_rootbeer_success(

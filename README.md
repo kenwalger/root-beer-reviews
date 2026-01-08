@@ -200,9 +200,11 @@ The guide covers:
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+**Quick Reference**: See [planning/commands.md](planning/commands.md) for a comprehensive list of CLI commands for package management, testing, deployment, and more.
+
 ### Testing
 
-The project includes a comprehensive test suite with 108 tests achieving 76% code coverage.
+The project includes a comprehensive test suite with 109 tests achieving 76% code coverage.
 
 **Run tests**:
 ```bash
