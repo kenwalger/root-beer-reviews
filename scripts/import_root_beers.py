@@ -115,7 +115,7 @@ async def import_root_beers(
         # Validate using Pydantic model (validates URL protocol, field constraints, etc.)
         try:
             root_beer_create = RootBeerCreate(**root_beer_data)
-            root_beer_dict = root_beer_create.model_dump(exclude_unset=True)
+            root_beer_dict = root_beer_create.model_dump(exclude_unset=True, mode='json')
         except ValidationError as e:
             print(f"❌ Validation error for {name}: {e.errors()}")
             errors += 1

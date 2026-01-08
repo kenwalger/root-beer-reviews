@@ -211,6 +211,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Import script validates URLs using Pydantic models (prevents security bypass)
     - Malicious URLs in JSON files are rejected during import
   - Useful for linking to brand websites or product pages
+- **MongoDB Serialization Fix**: Fixed Internal Server Error when updating root beers with URLs
+  - HttpUrl objects are now properly serialized to strings using `model_dump(mode='json')`
+  - Resolves `bson.errors.InvalidDocument` error when storing HttpUrl objects in MongoDB
+  - Applied to create, update, and import operations
 
 ### Improved
 - **Test Coverage**: Increased from 0% to 76% with comprehensive test suite
