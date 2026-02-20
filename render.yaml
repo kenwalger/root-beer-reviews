@@ -1,0 +1,23 @@
+# Render Blueprint (PaaS) - root beer review app
+# https://docs.render.com/blueprint-spec
+
+services:
+  - type: web
+    runtime: python
+    name: root-beer-review-app
+
+    buildCommand: pip install .
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+    # Required: set in Render Dashboard → Environment
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ENVIRONMENT
+        value: production

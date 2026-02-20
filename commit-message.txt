@@ -1,40 +1,6 @@
-Fix MongoDB serialization error for HttpUrl fields
+Migrate deployment from Heroku to Render PaaS
 
-Fixed Internal Server Error that occurred when updating root beers with URL
-fields. The issue was that Pydantic's HttpUrl objects cannot be directly
-serialized to MongoDB - they must be converted to strings first.
-
-## Problem
-
-When using `model_dump()` on Pydantic models containing HttpUrl fields, the
-HttpUrl objects were being passed directly to MongoDB, causing:
-```
-bson.errors.InvalidDocument: cannot encode object: HttpUrl('...'), 
-of type: <class 'pydantic.networks.HttpUrl'>
-```
-
-## Solution
-
-Changed `model_dump(exclude_unset=True)` to `model_dump(exclude_unset=True, mode='json')`
-in all places where root beer data is stored in MongoDB:
-
-- **create_rootbeer route**: Converts HttpUrl to string before insert
-- **update_rootbeer route**: Converts HttpUrl to string before update
-- **import_root_beers.py script**: Converts HttpUrl to string before import
-
-## How It Works
-
-- `mode='json'` tells Pydantic to serialize special types to JSON-compatible formats
-- HttpUrl objects are converted to strings (e.g., `"https://example.com"`)
-- MongoDB can store strings without issues
-- Security validation still occurs - invalid URLs are rejected before conversion
-
-## Impact
-
-- Root beer updates with URLs now work correctly
-- No loss of security - URLs are still validated before storage
-- Consistent behavior across create, update, and import operations
-
-This fix ensures that the URL field works correctly while maintaining all
-security validations.
-
+- Add render.yaml Blueprint (Python web service, pip install, uvicorn)
+- Replace "Deployment to Heroku" with "Deployment to Render" in README
+- Update tech stack to list Render as deployment target
+- Procfile retained for local/convention; Render uses render.yaml

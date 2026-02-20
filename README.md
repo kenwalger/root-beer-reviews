@@ -24,7 +24,7 @@ A structured, data-driven web application for reviewing root beers. This app dis
 - **Charts**: Chart.js for radar/spider charts
 - **Authentication**: JWT-based session cookies, bcrypt password hashing
 - **Package Management**: `uv` (with fallback to pip)
-- **Deployment**: Heroku-ready
+- **Deployment**: Render (PaaS)
 - **PWA**: Service worker, manifest, offline support
 
 ## Project Structure
@@ -164,33 +164,23 @@ The guide covers:
 - Categories: Traditional, Sweet & Creamy, Spice & Herbal, Other
 - **Default Seeding**: 20 default flavor notes are automatically seeded on first run
 
-## Deployment to Heroku
+## Deployment to Render
 
-1. **Create a Heroku app**:
-   ```bash
-   heroku create your-app-name
-   ```
+1. **Connect the repo** to [Render](https://render.com): Dashboard → New → Web Service, then connect your Git provider and select this repository. Render will detect the `render.yaml` Blueprint at the repo root.
 
-2. **Set environment variables**:
-   ```bash
-   heroku config:set MONGODB_URI=your-mongodb-uri
-   heroku config:set SECRET_KEY=your-secret-key
-   heroku config:set ADMIN_EMAIL=your-email
-   heroku config:set ADMIN_PASSWORD=your-password
-   heroku config:set ENVIRONMENT=production
-   ```
-   
-   **Note**: `ADMIN_EMAIL` and `ADMIN_PASSWORD` are only required for initial admin user creation. After the admin user is created in MongoDB, you can optionally remove these from Heroku config vars. The app will start without them, but you won't be able to create new admin users automatically.
+2. **Set environment variables** in the Render Dashboard (Environment tab). You will be prompted for any `sync: false` vars from the Blueprint:
+   - `MONGODB_URI` – MongoDB connection string (e.g. MongoDB Atlas)
+   - `SECRET_KEY` – Secret for JWT/session signing
+   - `ADMIN_EMAIL` – Email for the initial admin user
+   - `ADMIN_PASSWORD` – Password for the initial admin user  
+   `ENVIRONMENT` is set to `production` in the Blueprint.  
+   **Optional (S3 image uploads):** `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET`, `AWS_REGION` if you use image uploads.
 
-3. **Deploy**:
-   ```bash
-   git push heroku main
-   ```
+   **Note:** `ADMIN_EMAIL` and `ADMIN_PASSWORD` are only required for initial admin user creation. After the admin is created in MongoDB, you can remove them from Render; the app will start without them, but you won't be able to create new admin users automatically.
 
-4. **Open the app**:
-   ```bash
-   heroku open
-   ```
+3. **Deploy**: Render builds with `pip install .` and starts with `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Pushes to the linked branch trigger deploys unless you change the auto-deploy setting.
+
+4. **Open the app**: Use the service URL (e.g. `https://root-beer-review-app.onrender.com`) from the Render Dashboard.
 
 ## Development
 

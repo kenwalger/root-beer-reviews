@@ -162,6 +162,12 @@ async def view_rootbeer_public(rootbeer_id: str, request: Request):
     if rootbeer.get("images") and len(rootbeer["images"]) > 0 and not rootbeer.get("primary_image"):
         rootbeer["primary_image"] = rootbeer["images"][0]
     
+    # Ensure url field is a string if it exists (handle None or empty string)
+    if "url" in rootbeer and rootbeer.get("url"):
+        rootbeer["url"] = str(rootbeer["url"])
+    elif "url" not in rootbeer:
+        rootbeer["url"] = None
+    
     # Get all reviews
     reviews = await db.reviews.find({"root_beer_id": rootbeer_id}).sort("review_date", -1).to_list(100)
     
